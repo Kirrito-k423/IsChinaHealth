@@ -441,33 +441,18 @@ function buildComparisonTable(ind) {
     // (matched by exact id stem if id is like M01_CN we don't have such, so use sibling by category+name prefix)
     const myName = ind.name;
     // find siblings: same category, same "metric prefix" (strip country suffix)
-    function stripCountrySuffix(s) {
-      return s.replace(/[\uff08(].*?[\uff09)]/g, "").trim();
-    }
-    const myCore = stripCountrySuffix(myName);
-    const siblings = DATA.indicators.filter(x => {
-      if (x.id === ind.id) return true;
-      if (x.category !== ind.category) return false;
-      if (x.chart_type && x.chart_type !== "line") return false;
-      return stripCountrySuffix(x.name) === myCore;
-    });
-    // build a map: country -> sibling (or null)
-    const byCountry = { CN: null, US: null, JP: null, WORLD: null };
-    siblings.forEach(x => { if (byCountry[x.country] === null) byCountry[x.country] = x; });
-    // for any country not in byCountry, we mark as missing and infer a placeholder
+    // We show this indicator's own country with real data; the other 3 countries get
+    // a missing/inferred placeholder (visualized with dashes in the trend chart).
+    const last = ind.series[ind.series.length-1];
+    const prev1 = ind.series.length >= 2 ? ind.series[ind.series.length-2] : null;
+    const prev5 = ind.series.length >= 6 ? ind.series[ind.series.length-6] : null;
+    let d1 = null, d5 = null;
+    if (prev1 && prev1.value) d1 = (last.value - prev1.value) / Math.abs(prev1.value) * 100;
+    if (prev5 && prev5.value) d5 = (last.value - prev5.value) / Math.abs(prev5.value) * 100;
+    rows.push({ ctry: ind.country, ctryName: ctFullName[ind.country] || ind.country,
+                val: fmt(last.value, ind.unit), year: last.year, d1: d1, d5: d5, missing: false });
     countryOrder.forEach(ctry => {
-      const sib = byCountry[ctry];
-      if (sib && sib.series && sib.series.length) {
-        const last = sib.series[sib.series.length-1];
-        const prev1 = sib.series.length >= 2 ? sib.series[sib.series.length-2] : null;
-        const prev5 = sib.series.length >= 6 ? sib.series[sib.series.length-6] : null;
-        let d1 = null, d5 = null;
-        if (prev1 && prev1.value) d1 = (last.value - prev1.value) / Math.abs(prev1.value) * 100;
-        if (prev5 && prev5.value) d5 = (last.value - prev5.value) / Math.abs(prev5.value) * 100;
-        rows.push({ ctry: ctry, ctryName: ctFullName[ctry], val: fmt(last.value, ind.unit), year: last.year,
-                    d1: d1, d5: d5, missing: false });
-      } else {
-        // missing data: infer a placeholder
+      if (ctry !== ind.country) {
         rows.push({ ctry: ctry, ctryName: ctFullName[ctry], val: "\u2014", year: "",
                     d1: null, d5: null, missing: true, inferred: true });
       }

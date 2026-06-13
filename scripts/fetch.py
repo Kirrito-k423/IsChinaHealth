@@ -141,19 +141,18 @@ def real_run():
         # audit
         existing_years = {p["year"] for p in ind["series"]}
         appended = 0
+        # Skip indicators that already have data: data is human-seeded
+        # and auto-updating it is exactly the kind of AI-driven 'flood the
+        # internet with the same number' behaviour this project exists to
+        # push back against. Only fill in indicators with an empty series.
+        if ind["series"]:
+            print(f"SKIP {ind['id']} (already has {len(ind['series'])} points)")
+            continue
         for y, v in series:
-            if y in existing_years:
-                # update if value changed > 0.5%
-                old = next(p for p in ind["series"] if p["year"] == y)["value"]
-                if old and abs(v - old) / abs(old) > 0.005:
-                    print(f"REVISED {ind['id']} {y}: {old} -> {v}")
-                    ind["series"] = [p for p in ind["series"] if p["year"] != y]
-                    ind["series"].append({"year": y, "value": v})
-            else:
-                ind["series"].append({"year": y, "value": v})
-                appended += 1
+            ind["series"].append({"year": y, "value": v})
+            appended += 1
         if appended:
-            print(f"OK {ind['id']} +{appended}")
+            print(f"OK {ind['id']} +{appended} (initial fill)")
     data["meta"]["last_updated"] = time.strftime("%Y-%m-%d")
     json.dump(data, open("data/indicators.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 

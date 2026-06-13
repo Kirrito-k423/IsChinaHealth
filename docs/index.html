@@ -343,13 +343,17 @@ function getFilters() {
 }
 
 function fmt(value, unit) {
-  if (value == null) return "n/a";
-  if (unit === "%" || unit === "‰") return value.toFixed(1) + " " + unit;
-  if (unit === "指数 0-1") return value.toFixed(3);
-  if (unit === "万亿元") return value.toFixed(1) + " 万亿";
-  if (unit === "万人") return Math.round(value).toLocaleString() + " 万人";
-  if (Math.abs(value) >= 1000) return value.toLocaleString(undefined,{maximumFractionDigits:0}) + " " + unit;
-  return value.toLocaleString() + " " + unit;
+  if (value === undefined || value === null || (typeof value === "number" && isNaN(value))) return "n/a";
+  try {
+    if (unit === "%" || unit === "‰") return value.toFixed(1) + " " + unit;
+    if (unit === "指数 0-1") return value.toFixed(3);
+    if (unit === "万亿元") return value.toFixed(1) + " 万亿";
+    if (unit === "万人") return Math.round(value).toLocaleString() + " 万人";
+    if (Math.abs(value) >= 1000) return value.toLocaleString(undefined,{maximumFractionDigits:0}) + " " + unit;
+    return value.toLocaleString() + " " + unit;
+  } catch (e) {
+    return "n/a";
+  }
 }
 
 function deltaDirection(ind) {
@@ -476,10 +480,10 @@ function buildComparisonTable(ind) {
     const cls = "ctry-" + r.ctry + (r.missing ? " missing" : "");
     const d1cell = r.d1 === null ? "<td>\u2014</td>"
       : "<td class=\"" + (r.d1 > 1 ? "delta-up" : (r.d1 < -1 ? "delta-down" : "delta-flat")) + "\">"
-        + (r.d1 >= 0 ? "+" : "") + r.d1.toFixed(1) + "%</td>";
+        + (r.d1 >= 0 ? "+" : "") + (Number(r.d1).toFixed(1)) + "%</td>";
     const d5cell = r.d5 === null ? "<td>\u2014</td>"
       : "<td class=\"" + (r.d5 > 1 ? "delta-up" : (r.d5 < -1 ? "delta-down" : "delta-flat")) + "\">"
-        + (r.d5 >= 0 ? "+" : "") + r.d5.toFixed(1) + "%</td>";
+        + (r.d5 >= 0 ? "+" : "") + (Number(r.d5).toFixed(1)) + "%</td>";
     const valCell = r.missing
       ? "<td class=\"inferred\" title=\"\u672c\u56fd\u7f3a\u5c11\u516c\u5f00\u5e74\u5ea6\u5e8f\u5217\uff0c\u4ec5\u63a8\u6f14\u4f30\u7b97\u8d8b\u52bf\">\u2014 <span class=\"infer-mark\">\u63a8\u6f14</span></td>"
       : "<td>" + r.val + " <small style=\"color:var(--muted)\">" + r.year + "</small></td>";
@@ -674,7 +678,7 @@ function buildCard(ind) {
         if (v === null || v === undefined) {
           tableHtml += "<td class=\"inferred\">\u2014 <span class=\"infer-mark\">\u63a8\u6f14</span></td>";
         } else {
-          tableHtml += "<td class=\"ctry-" + c + "\">" + v.toFixed(1) + "</td>";
+          tableHtml += "<td class=\"ctry-" + c + "\">" + (v == null ? "—" : v.toFixed(1)) + "</td>";
         }
       });
       tableHtml += "</tr>";

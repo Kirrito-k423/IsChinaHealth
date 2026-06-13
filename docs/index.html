@@ -265,7 +265,7 @@ let DATA = null;
 let CHARTS = [];
 
 async function loadData() {
-  const res = await fetch("../data/indicators.json", { cache: "no-store" });
+  const res = await fetch("data/indicators.json", { cache: "no-store" });
   DATA = await res.json();
   document.getElementById("metaVersion").textContent = DATA.meta.version;
   document.getElementById("metaUpdated").textContent = DATA.meta.last_updated;

@@ -32,11 +32,15 @@ jobs:
         run: python scripts/fetch.py
       - name: Validate JSON
         run: python scripts/validate.py
+      - name: Sync to docs/data/ so GitHub Pages can serve it
+        run: |
+          mkdir -p docs/data
+          cp data/indicators.json docs/data/indicators.json
       - name: Commit if changed
         run: |
           git config user.name "data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add data/indicators.json
+          git add data/indicators.json docs/data/indicators.json
           if git diff --staged --quiet; then
             echo "no data changes"
           else

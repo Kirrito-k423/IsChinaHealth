@@ -27,7 +27,7 @@
     },
     "data_confidence_legend": {
       "official": "政府/国际组织发布，可直接溯源",
-      "official_derived": "?????????????/PPP/??/WB PIP ???",
+      "official_derived": "官方原始数据衍生（汇率换算/PPP 调整/缺失年份回填/WB PIP 估算等），溯源链路在 note 字段说明",
       "academic": "学术研究/智库测算（白重恩、PIKIN 等）",
       "industry_sample": "行业平台样本（Levels.fyi / 脉脉 / 猎聘），不具统计代表性"
     }
@@ -35,15 +35,15 @@
   "indicators": [
     {
       "id": "M01",
-      "name": "?????/?/?/??????",
+      "name": "总人口（中/美/日/全球）",
       "country": "WORLD",
       "category": "population",
-      "unit": "??",
-      "source": "????? + US Census Bureau + ?????? + UN WPP",
+      "unit": "万人",
+      "source": "中国国家统计局 + US Census Bureau + 日本总务省统计局 + UN World Population Prospects 2024",
       "source_url": "https://population.un.org/wpp/",
-      "method": "official 4 ????CN/US/JP ???????WORLD ?? UN WPP ????",
+      "method": "official 4 国官方数据；CN/US/JP 来自各国统计局，WORLD 来自 UN WPP 2024 Revision",
       "confidence": "official",
-      "note": "1 ?? ? 10000 ????? 2022 ???????????",
+      "note": "1 万 = 10000 人。2022 年中国总人口见顶回落（2021 减 8 万人），2023 减少 208 万，2024 续减 139 万，正式进入负增长。日本 2010 起持续下降，2024 仅剩 1.24 亿。全球仍增长但增速放缓。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -218,15 +218,15 @@
     },
     {
       "id": "M02",
-      "name": "??????/?/?/???",
+      "name": "出生人口（中/美/日/全球）",
       "country": "WORLD",
       "category": "population",
-      "unit": "??",
-      "source": "????? + US NCHS + ????? + UN WPP",
+      "unit": "万人",
+      "source": "中国国家统计局 + US NCHS National Vital Statistics + 日本厚生劳动省人口动态统计 + UN WPP",
       "source_url": "https://population.un.org/wpp/Download/Standard/MostUsed/",
-      "method": "official 4 ????CN 2023/2024 ?? 902 ??????????",
+      "method": "official 4 国数据；CN 2023/2024 902 万为建国以来最低",
       "confidence": "official",
-      "note": "????=??????????4 ??????????????",
+      "note": "中国出生人口从 2016 年峰值 1786 万跌至 2024 年 902 万，8 年腰斩，2023 年总和生育率约 1.0，低于日本 1.20。美国近年回落到约 360 万（TFR 1.62），日本 72 万历史新低（TFR 1.20），全球新生人口持续下行。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -401,15 +401,15 @@
     },
     {
       "id": "M04",
-      "name": "65 ??????????/?/?/???",
+      "name": "65 岁以上人口占比（中/美/日/全球）",
       "country": "WORLD",
       "category": "aging",
       "unit": "%",
-      "source": "????? + US Census Bureau + ?????? + UN WPP",
+      "source": "中国国家统计局 + US Census Bureau + 日本总务省统计局 + UN WPP",
       "source_url": "https://population.un.org/wpp/Download/Standard/MostUsed/",
-      "method": "official 4 ????CN 2030 ???? 20% ??????",
+      "method": "official 4 国 65+ 人口占总人口比例",
       "confidence": "official",
-      "note": "?? 29% ????????? 18% ?????CN ???????????",
+      "note": "日本 29% 全球最高（深度老龄化），美国 17.9%、中国 15.9%（已接近美国），全球均值 9.9%。中国老龄化速度全球最快：65+ 占比从 7%（老龄化社会）到 14%（老龄社会）仅用 21 年（2001→ 2022），远快于法国 115 年、日本 24 年。预计 2030 年前后突破 20%，进入超老龄社会。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -584,15 +584,15 @@
     },
     {
       "id": "M05",
-      "name": "?????????/?/?/?????????2015-2024?",
+      "name": "人均可支配收入（中/美/日/全球，2015-2024）",
       "country": "WORLD",
       "category": "income",
-      "unit": "?????",
-      "source": "????? + US Census Bureau ASEC + ????????? + IMF WEO",
+      "unit": "万元/年（本币）",
+      "source": "中国国家统计局住户调查 + US Census Bureau ASEC + 日本总务省家计调查 + IMF WEO GNI per capita",
       "source_url": "https://www.census.gov/topics/income-poverty/income.html",
-      "method": "official 4 ????CN ???????+??????US ?????????JP ???????WORLD ??? GNI",
+      "method": "official 4 国人均口径；中国=全国居民人均可支配收入，美国=household median，JP=二人以上世带，WORLD=IMF GNI per capita",
       "confidence": "official",
-      "note": "4 ???????????????CN ?? 2015-2024 ??(31195?54182)????????(11422?23119)",
+      "note": "4 国为本币单位（人民币元 / 美元 / 万日元 / 美元），请勿直接横比。中国 2015-2024 年从 21966 元升至 41314 元，城镇 31195 → 54182 元，农村 11422 → 23119 元；美国 HHD median 5.6 → 8.1 万美元；日本 424 → 420 万日元（基本停滞）；全球均值 1.03 → 1.45 万美元。",
       "series": [
         {
           "year": 2015,
@@ -809,15 +809,15 @@
     },
     {
       "id": "M07",
-      "name": "?????/?/?/??????",
+      "name": "失业率（中/美/日/全球）",
       "country": "WORLD",
       "category": "employment",
       "unit": "%",
-      "source": "????? + BLS CPS + ??????????? + ILO",
+      "source": "中国国家统计局城镇调查失业率 + US BLS CPS U-3 + 日本总务省劳动力调查 + ILOSTAT",
       "source_url": "https://www.ilo.org/global/research/global-reports/weso/2024/lang--en/index.htm",
-      "method": "official 4 ???????????????????????",
+      "method": "official 4 国调查失业率，16 岁及以上劳动力口径",
       "confidence": "official",
-      "note": "4 ??????CN ?????? 16+ ?????US U-3 ???????JP/ILO ? ILO ????",
+      "note": "中国 2024 年城镇调查失业率均值 5.1%（16+ 不含在校生），2023 年起不再公布青年失业率分项后改口径；美国 U-3 4.0% 处历史低位；日本 2.5% 处充分就业；全球 ILO 估算 5.0%。注意：中国统计口径 2023 年起剔除在校生，2024 起仅公布城镇不包含在校生口径。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -992,15 +992,15 @@
     },
     {
       "id": "M08",
-      "name": "16-24 ????????/?/?/???????? / US BLS 16-24 U-3?",
+      "name": "16-24 岁青年失业率（中/美/日/全球 / US BLS 16-24 U-3）",
       "country": "WORLD",
       "category": "employment",
       "unit": "%",
-      "source": "????? + BLS CPS + ??????????? + ILOSTAT",
+      "source": "中国国家统计局城镇青年失业率 + BLS CPS + 日本总务省劳动力调查 + ILOSTAT",
       "source_url": "https://ilostat.ilo.org/",
-      "method": "official 4 ????CN/US/JP ?? 16-24 ??????????????",
+      "method": "official 4 国 16-24 岁年龄组失业率",
       "confidence": "official",
-      "note": "CN 2023 ??????????????????????US 16-24 U-3 ???????????ILO ???????? 15-24 ??",
+      "note": "CN 2023 年起不再公布 16-24 岁失业率（2023.6 暂停后改口径），2024 起按不包含在校生口径公布，2024 年 16-24 口径 16.9% 显著高于其他 3 国；美国 BLS 16-24 U-3 约 7.5%；日本 15-24 完全失业率约 4.8%；ILO 全球 15-24 估算 12.9%。中国青年就业压力是 4 国中最突出的。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -1175,15 +1175,15 @@
     },
     {
       "id": "M12",
-      "name": "CPI ????/?/?/???",
+      "name": "CPI 同比涨幅（中/美/日/全球）",
       "country": "WORLD",
       "category": "cost_of_living",
       "unit": "%",
-      "source": "????? + BLS + ??????????? + IMF WEO",
+      "source": "中国国家统计局 CPI + US BLS CPI-U + 日本总务省统计局 CPI + IMF WEO World CPI",
       "source_url": "https://www.imf.org/en/Publications/WEO",
-      "method": "official 4 ????JP ??????????? / ??",
+      "method": "official 4 国 CPI 同比",
       "confidence": "official",
-      "note": "4 ? 2020-2022 ?????2023-2024 ?????CN ?????? 3 ?",
+      "note": "4 国 2020-2022 年普遍高通胀，2023-2024 年明显回落。日本走出通缩 2024 年 CPI 2.7%。中国 2024 CPI 同比仅 0.3% 处低位，反映内需偏弱 + 房地产下行拖累相关价格。美国 2.9% 接近 2% 目标，全球均值 4.2%。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -1358,15 +1358,15 @@
     },
     {
       "id": "M14",
-      "name": "??????????/?/?/???2015=100?IMF/BIS Real Residential Property Prices?",
+      "name": "实际住宅价格指数（中/美/日/全球，2015=100，IMF/BIS Real Residential Property Prices）",
       "country": "WORLD",
       "category": "housing",
-      "unit": "?? 2015=100",
+      "unit": "指数 2015=100",
       "source": "IMF Global Housing Watch + BIS Residential Property Price database",
       "source_url": "https://www.imf.org/en/Research/commodity-prices",
-      "method": "official 4 ????2015=100 ????????????CN 2022 ?????US ????",
+      "method": "official 4 国 2015=100 实际住宅价格指数（剔除通胀），IMF/BIS 季度公布",
       "confidence": "official",
-      "note": "4 ??????????????IMF/BIS ????/?????CN 2015-2021 ?????2022-2024 ????? 12%",
+      "note": "4 国 2015-2024 实际房价走势分歧巨大。CN 2015-2021 年间上涨约 80%，2022-2024 年下跌约 12%，是 4 国中唯一出现明显调整的经济体；US 同期涨约 70%；JP 仅涨约 25% 但人口持续下降；WORLD 涨约 44%。中国此轮调整是 1998 年房改以来首次实际价格水平下降。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -1541,15 +1541,15 @@
     },
     {
       "id": "M15",
-      "name": "?????/?/?/???????/GDP ? PCE ????",
+      "name": "储蓄率（中/美/日/全球，国民储蓄/GDP 或 PCE 口径）",
       "country": "WORLD",
       "category": "wealth",
       "unit": "%",
-      "source": "????????? / ? BEA Personal Saving Rate / ????? ??????? / IMF WEO",
+      "source": "中国国家统计局资金流量表 / US BEA Personal Saving Rate / 日本内閥府国民经济计算 / IMF WEO Gross National Savings",
       "source_url": "https://www.bea.gov/data/consumer-spending/main",
-      "method": "official + official_derived?CN ???????????????????????",
+      "method": "official + official_derived 4 国国民储蓄率；中国含住户+企业+政府总储蓄",
       "confidence": "official_derived",
-      "note": "CN ????????US 2020-2021 ??????????????JP ?????WORLD ? IMF ???/GDP ??",
+      "note": "CN 国民储蓄率约 43.7% 处全球高位（高于全球均值 24% 一倍），US 2020-2021 年因疫情补贴跳升至 18% 后回落至 4.6%；JP 仅 4.5%；WORLD 24.2%。中国高储蓄率是投资型经济特征，与居民消费率低（约 38%）互为镜像。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -1724,15 +1724,15 @@
     },
     {
       "id": "M16",
-      "name": "??????/?/?/???World Bank PIP?",
+      "name": "基尼系数（中/美/日/全球，World Bank PIP）",
       "country": "WORLD",
       "category": "inequality",
-      "unit": "?? 0-1",
-      "source": "World Bank Poverty and Inequality Platform (PIP, ??????)",
+      "unit": "指数 0-1",
+      "source": "World Bank Poverty and Inequality Platform (PIP, 全球数据库)",
       "source_url": "https://pip.worldbank.org/",
-      "method": "official 4 ????CN ???????? 2019 ????????? World Bank PIP ????",
+      "method": "official 4 国基尼系数；CN 数据 2019 年后未更新，2020-2022 用 World Bank PIP 估算",
       "confidence": "official_derived",
-      "note": "0.4 ???????CN/US ???? JP/WORLD ???2023-2024 ????????",
+      "note": "0.4 是国际警戒线。CN 0.467（2022）与 US 0.418（2023）均高于警戒，JP 0.335 / WORLD 0.384 相对较低。中国基尼因 2023-2024 房地产下行+资产缩水出现下行（财富分项），但收入分项仍高。美国 30 年来基尼从 0.43 降至 0.42 主要靠转移支付。中国未公布 2020 年后官方基尼，学术界估算在 0.46-0.50 之间。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -1879,15 +1879,15 @@
     },
     {
       "id": "M25",
-      "name": "????? GDP ?????????/?/?/???",
+      "name": "劳动分配率（劳动者报酬占 GDP 比重，中/美/日/全球）",
       "country": "WORLD",
       "category": "distribution",
       "unit": "%",
-      "source": "????????? + BEA NIPA 1.10 + ????? SNA + ILO",
+      "source": "中国国家统计局资金流量表 + BEA NIPA 1.10 Compensation of Employees + 日本内閥府 SNA + ILO Global Wage Report",
       "source_url": "https://www.bea.gov/data/national",
-      "method": "official + official_derived?CN ????????????????",
+      "method": "official + official_derived；CN 含劳动者报酬占 GDP 比例，2024 年数据源未公布，标 null",
       "confidence": "academic",
-      "note": "?????\"?????\"?????????????US/JP ??? BEA/SNA ??",
+      "note": "劳动分配率是衡量 GDP 蛋糕分给劳动者 vs 资本的关键指标。US 59.7%、JP 54.5%、WORLD 52.6%，CN 长期处 47% 左右（官方源 2024 未公布已标空）。中国劳动分配率显著低于发达国家，是居民收入占 GDP 比重低、收入分配偏向资本与政府的反映，也是消费率长期偏低的根因。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -2062,15 +2062,15 @@
     },
     {
       "id": "M27",
-      "name": "AI ?????/???????????/?/?/????????",
+      "name": "AI 从业者/算法工程师年薪（中/美/日/全球，Levels.fyi）",
       "country": "WORLD",
       "category": "wage_ai",
-      "unit": "? ??/?",
-      "source": "Levels.fyi + ?? + ?? + Mynavi 2024",
+      "unit": "万元 / 年（本币）",
+      "source": "Levels.fyi 2024Q4 + Mynavi 2024 求人 + 国内猎聘/拉动 2024 + Glassdoor AI",
       "source_url": "https://www.levels.fyi/titles/ai-engineer",
-      "method": "industry_sample 4 ??????????????????",
+      "method": "industry_sample 4 国主要平台/猎头公司 AI 算法工程师/研究员薪资中位数",
       "confidence": "industry_sample",
-      "note": "Levels.fyi ?? 1 USD ? CN 7.2?CN 70 ? vs US 82 ??? = 12.4 ? CN ?????JP 22 ?????",
+      "note": "Levels.fyi 统计按 1 USD ≈ CN 7.2 折算。CN 70 万元/年 vs US 82 万美元/年 = 约 12.4 万美元 CN，CN 已达 US 约 88% 水平，绝对值上 CN 高于 JP（22 万人民币）3 倍。中美 AI 薪资差距已显著缩小。注：Levels.fyi 样本偏向大厂资深岗，含股票+签字费；中国国内平台数据多为基础现金部分。2015-2017 年早期数据因平台未覆盖已标 null。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -2245,15 +2245,15 @@
     },
     {
       "id": "M35",
-      "name": "?? GDP??/?/?/????????",
+      "name": "人均 GDP（中/美/日/全球，名义本币）",
       "country": "WORLD",
       "category": "economy",
-      "unit": "??",
+      "unit": "万元/人（本币）",
       "source": "IMF World Economic Outlook 2024-10",
       "source_url": "https://www.imf.org/en/Publications/WEO",
-      "method": "official 4 ??????????? PPP ??",
+      "method": "official 4 国名义人均 GDP（汇率口径），请勿与 PPP 混用",
       "confidence": "official",
-      "note": "????????????? PPP?CN 1.33 ? vs US 8.48 ? = 15.7% ??????PPP ?? 24%?",
+      "note": "中国 1.33 万美元 vs 美国 8.48 万美元 = 约 15.7% 美国水平（汇率口径）。按 PPP 计算中国约 2.4 万国际元，差距缩窄到 24%。日本 3.25 万美元因 2022-2024 日元大幅贬值已跌回 1990 年代水平。全球均值 1.45 万美元。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -2428,15 +2428,15 @@
     },
     {
       "id": "M39",
-      "name": "???? / ???????????/?/?/??????",
+      "name": "灵活就业人数（中/美/日/全球）",
       "country": "WORLD",
       "category": "employment",
-      "unit": "??",
-      "source": "????? + BLS Contingent Worker Supplement + ????? ???????? + ILO ???????",
+      "unit": "亿人",
+      "source": "中国国家统计局劳动力调查 + BLS Contingent Worker Supplement + 日本总务省劳动力调查 + ILO 非标准就业报告",
       "source_url": "https://www.ilo.org/global/topics/non-standard-employment/lang--en/index.htm",
-      "method": "official + official_derived 4 ????4 ??\"????\"????????CN ????/??/??",
+      "method": "official + official_derived 4 国 灵活/非标准 就业人数；CN 口径含个体/兼职/新业态",
       "confidence": "official_derived",
-      "note": "CN 2.4 ? = ??? 7.4 ?? 32%?US Contingent Worker 2017-2023 ??? 30%?ILO 2024 ?? 20 ??????",
+      "note": "CN 2.4 亿人 = 总就业人口 7.4 亿的 32%；US Contingent Worker 2017-2023 年约 5500-7500 万，占就业 19-20%；JP 兼职+派遣 1100 万，约 18%；ILO 2024 年全球非标准就业 20 亿占 47%。中国灵活就业比例 4 国中最高，反映平台经济（外卖/快递/网约车/直播）爆发 + 传统制造业转型。",
       "chart_type": "compare",
       "compare": {
         "CN": [
@@ -2611,15 +2611,15 @@
     },
     {
       "id": "M40",
-      "name": "???? / ???????????????/?/?/???",
+      "name": "灵活就业占比（中/美/日/全球）",
       "country": "WORLD",
       "category": "employment",
       "unit": "%",
-      "source": "????? + BLS Contingent Worker Supplement + ???????? + ILO",
+      "source": "中国国家统计局 + BLS Contingent Worker Supplement + 日本總务省統計局 + ILO",
       "source_url": "https://www.ilo.org/global/topics/non-standard-employment/",
-      "method": "official + official_derived 4 ?????????????CN 32% ????/??/???",
+      "method": "official + official_derived 4 国灵活/非标准就业占总就业比例",
       "confidence": "official_derived",
-      "note": "CN ?? 32% ???? 20%/? 8%?ILOSTAT ?? 48% ????????????????",
+      "note": "CN 城镇就业 32% 为灵活就业者（含个体工商户 + 平台从业者 + 临时工）；US Contingent Worker 约 19.7%；JP 派遣+兼职+个人营业合计 7-8%（口径更严）；ILOSTAT 全球 48% 属非标准就业（含全部发展中国家自雇农业）。中国处于发展中-发达过渡水平。",
       "chart_type": "compare",
       "compare": {
         "CN": [

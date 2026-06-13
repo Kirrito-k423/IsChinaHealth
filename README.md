@@ -7,6 +7,29 @@
 
 ---
 
+## Quick start (TL;DR)
+
+```bash
+# 1. Restore the git history from the bundle in this directory
+git clone IsChinaHealth.bundle IsChinaHealth-git
+cd IsChinaHealth-git
+
+# 2. Copy the working files from E:\PowerShell\github\IsChinaHealth\
+#    on top of the freshly cloned tree (it has only .git/, no source files).
+xcopy /E /Y /I "E:\PowerShell\github\IsChinaHealth\*" .
+
+# 3. Add your GitHub remote and push
+git remote add origin git@github.com:<your-account>/IsChinaHealth.git
+git push -u origin main
+```
+
+The repo includes `.github/workflows/weekly.yml`. On GitHub:
+
+1. Go to **Settings → Pages → Build and deployment → Source: GitHub Actions**
+2. Push triggers the workflow; it deploys `docs/` to Pages on every successful run
+3. After the first deploy, the dashboard lives at
+   `https://<your-account>.github.io/IsChinaHealth/`
+
 ## What this project is
 
 A continuously-updated, fully-cited, **static** data dashboard that compares
@@ -14,6 +37,7 @@ real-world wellbeing indicators across China, the US, Japan, and the world,
 with sub-cuts for:
 
 - 全体居民 / 城市居民 / 农村居民 / 农民工
+- 都市白领（以《城镇非私营单位平均工资》为上限、《城镇私营单位平均工资》为下限）
 - 计算机 / 软件行业平均工资
 - AI 研究员 / 算法工程师总薪酬
 

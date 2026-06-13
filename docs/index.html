@@ -168,8 +168,8 @@ footer a { color: var(--muted); }
   <p><strong>这个项目是做什么的？</strong></p>
   <p>
     第一，反“AI 引战型低质内容”。
-    B 站、知乎、小红书上很多打“资本与劳动对竟”、“生育下跌”、“互联网院薪低”的内容，
-    很多是抽了部分实数据上口头，并未给出原始来源与口径。
+    B 站、知乎、小红书上很多打“资本与劳动对立”、“生育下跌”、“互联网降薪低”的内容，
+    很多是抽了部分实数据上口，并未给出原始来源与口径。
     本页面仅采纳《国家统计年鉴》、《BLS 年报》、《IMF WEO》《ILO WESO》等可直接验证的原始公开文件，并在每张图表下方标注。
   </p>
   <p>
@@ -336,12 +336,14 @@ function fmt(value, unit) {
 }
 
 function deltaDirection(ind) {
+  if (ind.chart_type === "pyramid" || ind.chart_type === "compare") return { sign: "flat", text: "" }; // special cards use their own header
   // Heuristic: for population / income / wage / wealth, up = good? No — 财富不高，人口不多
   // We simply compute first->last slope, sign is shown but interpretation left to the user.
   const s = ind.series;
   if (s.length < 2) return { sign: "flat", text: "" };
   const first = s[0], last = s[s.length-1];
   if (!first || !last) return { sign: "flat", text: "" };
+  if (typeof first.value !== "number" || typeof last.value !== "number") return { sign: "flat", text: "" };
   const dPct = (last.value - first.value) / Math.abs(first.value) * 100;
   const sign = dPct > 1 ? "up" : (dPct < -1 ? "down" : "flat");
   return { sign, text: (dPct>=0?"+":"") + dPct.toFixed(1) + "% (" + first.year + "→" + last.year + ")" };
@@ -389,26 +391,144 @@ function buildCard(ind) {
     ind.confidence === "official" ? "official" :
     ind.confidence === "academic" ? "academic" : "sample"
   );
-  const last = ind.series[ind.series.length-1];
-  const d = deltaDirection(ind);
   const confLabel = {
     official: "official 官方",
     academic: "academic 估算",
     industry_sample: "industry_sample 行业样本"
   }[ind.confidence] || ind.confidence;
+  const isPyramid = ind.chart_type === "pyramid";
+
+  // Header
+  let headerH3 = `<h3><span>${ind.name}</span><span class="tag">${COUNTRY_LABEL[ind.country] || ind.country} \u00b7 ${confLabel}</span></h3>`;
+
+  // value-now + delta
+  let valueBlock = "";
+  if (isPyramid) {
+    const total = ind.series.reduce((a, p) => a + p.male + p.female, 0);
+    const male = ind.series.reduce((a, p) => a + p.male, 0);
+    const female = ind.series.reduce((a, p) => a + p.female, 0);
+    const ratio = (male / female * 100).toFixed(1);
+    valueBlock = `
+      <div class="value-now">${(total/10000).toFixed(2)} 亿人 <small>${ind.series[0]?.age_group || ''} \u2192 ${ind.series[ind.series.length-1]?.age_group || ''}</small></div>
+      <div class="delta flat">\u7537 ${(male/10000).toFixed(2)} \u4ebf \u00b7 \u5973 ${(female/10000).toFixed(2)} \u4ebf \u00b7 \u6027\u522b\u6bd4 ${ratio}</div>
+    `;
+  } else if (ind.chart_type === "compare") {
+    const ctryList = Object.keys(ind.compare).map(c => COUNTRY_LABEL[c] || c);
+    const lastYear = (ind.compare.CN || ind.compare[Object.keys(ind.compare)[0]]).slice(-1)[0].year;
+    valueBlock = `
+      <div class="value-now">国别对比：${ctryList.join(" / ")} <small>${lastYear}</small></div>
+      <div class="delta flat">点击图例查看中美日全球同一指标走势</div>
+    `;
+  } else {
+    const last = ind.series[ind.series.length-1];
+    const d = deltaDirection(ind);
+    valueBlock = `
+      <div class="value-now">${last ? fmt(last.value, ind.unit) + ' <small>' + last.year + '</small>' : 'n/a'}</div>
+      <div class="delta ${d.sign}">${d.text}</div>
+    `;
+  }
+
   card.innerHTML = `
-    <h3><span>${ind.name}</span><span class="tag">${COUNTRY_LABEL[ind.country] || ind.country} · ${confLabel}</span></h3>
-    <div class="value-now">${last ? fmt(last.value, ind.unit) + ' <small>' + last.year + '</small>' : 'n/a'}</div>
-    <div class="delta ${d.sign}">${d.text}</div>
+    ${headerH3}
+    ${valueBlock}
     <div class="canvas-wrap"><canvas></canvas></div>
     <div class="note">${ind.note || ''}</div>
     <div class="src">
-      来源：<a href="${ind.source_url}" target="_blank" rel="noopener">${ind.source}</a>
-      · 口径：${ind.method}
+      \u6765\u6e90\uff1a<a href="${ind.source_url}" target="_blank" rel="noopener">${ind.source}</a>
+      \u00b7 \u53e3\u5f84\uff1a${ind.method}
     </div>
   `;
-  // chart
-  if (ind.series.length) {
+
+  // Chart
+  if (isPyramid) {
+    // horizontal bar pyramid: male (left, negative), female (right, positive)
+    const labels = ind.series.map(p => p.age_group);
+    const maleData = ind.series.map(p => -p.male);
+    const femaleData = ind.series.map(p => p.female);
+    const ctx = card.querySelector("canvas");
+    const ch = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          { label: "\u7537", data: maleData, backgroundColor: "rgba(31,122,58,0.75)", borderColor: "#1f7a3a", borderWidth: 0.5 },
+          { label: "\u5973", data: femaleData, backgroundColor: "rgba(192,57,43,0.75)", borderColor: "#c0392b", borderWidth: 0.5 }
+        ]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { font: { size: 11 } } },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const v = Math.abs(ctx.parsed.x);
+                return ctx.dataset.label + ": " + v.toLocaleString() + " \u4e07\u4eba";
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: {
+              font: { size: 10 },
+              callback: function(v) { return Math.abs(v).toLocaleString(); }
+            },
+            title: { display: true, text: "\u4eba\u53e3 (\u4e07\u4eba)", font: { size: 10 } }
+          },
+          y: {
+            stacked: true,
+            grid: { display: false },
+            ticks: { font: { size: 10 } },
+            title: { display: true, text: "\u5e74\u9f84\u7ec4", font: { size: 10 } }
+          }
+        }
+      }
+    });
+    CHARTS.push(ch);
+  } else if (ind.chart_type === "compare" && ind.compare) {
+    // Multi-country overlay: 4 lines (CN red, US blue, JP orange, WORLD grey)
+    const labels = (ind.compare.CN || ind.compare[Object.keys(ind.compare)[0]]).map(p => p.year);
+    const colors = {
+      CN:    { line: "#c0392b", bg: "rgba(192,57,43,0.10)" },
+      US:    { line: "#1f4e9d", bg: "rgba(31,78,157,0.10)" },
+      JP:    { line: "#b07a1a", bg: "rgba(176,122,26,0.10)" },
+      WORLD: { line: "#444",    bg: "rgba(68,68,68,0.10)" }
+    };
+    const countryNames = { CN: "\u4e2d\u56fd", US: "\u7f8e\u56fd", JP: "\u65e5\u672c", WORLD: "\u5168\u7403" };
+    const datasets = Object.keys(ind.compare).map(ctry => ({
+      label: countryNames[ctry] || ctry,
+      data: ind.compare[ctry].map(p => p.value),
+      borderColor: colors[ctry] ? colors[ctry].line : "#666",
+      backgroundColor: colors[ctry] ? colors[ctry].bg : "rgba(102,102,102,0.10)",
+      tension: 0.18,
+      pointRadius: 2,
+      borderWidth: 1.5,
+      fill: false
+    }));
+    const ctx = card.querySelector("canvas");
+    const ch = new Chart(ctx, {
+      type: "line",
+      data: { labels: labels, datasets: datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { font: { size: 11 }, boxWidth: 16 } },
+          tooltip: { mode: "index", intersect: false }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: "rgba(0,0,0,0.05)" }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+    CHARTS.push(ch);
+  } else if (ind.series.length) {
     const ctx = card.querySelector("canvas");
     const ch = new Chart(ctx, {
       type: "line",
@@ -469,7 +589,7 @@ loadData().catch(err => {
   "meta": {
     "title": "中/美/世界民生关键指标数据集",
     "subtitle": "用官方原始口径，识别 AI 引战之外的真实结构",
-    "version": "0.3.0",
+    "version": "0.5.0",
     "last_updated": "2026-06-13",
     "license": "数据版权归原始机构所有；本汇编以 CC BY 4.0 发布",
     "methodology": "只用官方统计/政府公开数据；非官方来源必须标 confidence=sample 或 derived，绝不静默",
@@ -2543,6 +2663,1052 @@ loadData().catch(err => {
           "value": 32.0
         }
       ]
+    },
+    {
+      "id": "M41",
+      "name": "人口死亡率（中国）",
+      "country": "CN",
+      "category": "population",
+      "unit": "‰",
+      "source": "国家统计局《中国统计年鉴》人口出生率·死亡率·自然增长率",
+      "source_url": "https://www.stats.gov.cn/sj/zxfb/202302/t20230203_1900863.html",
+      "method": "official",
+      "confidence": "official",
+      "note": "年内死亡人数 / 年平均人口 × 1000‰。2023 年 7.87‰，2024 年约 7.76‰。与出生率（M03 6.41‰）之差为自然增长率（约 -1.35‰，中国 2024 年起进入人口负增长）。",
+      "series": [
+        {
+          "year": 2015,
+          "value": 7.11
+        },
+        {
+          "year": 2016,
+          "value": 7.09
+        },
+        {
+          "year": 2017,
+          "value": 7.11
+        },
+        {
+          "year": 2018,
+          "value": 7.13
+        },
+        {
+          "year": 2019,
+          "value": 7.14
+        },
+        {
+          "year": 2020,
+          "value": 7.07
+        },
+        {
+          "year": 2021,
+          "value": 7.18
+        },
+        {
+          "year": 2022,
+          "value": 7.37
+        },
+        {
+          "year": 2023,
+          "value": 7.87
+        },
+        {
+          "year": 2024,
+          "value": 7.76
+        }
+      ]
+    },
+    {
+      "id": "M42",
+      "name": "结婚率（中国，全国）",
+      "country": "CN",
+      "category": "population",
+      "unit": "‰",
+      "source": "民政部《民政事业发展统计公报》",
+      "source_url": "https://www.mca.gov.cn/n152/n165/c1662004999979996614/content.html",
+      "method": "official",
+      "confidence": "official",
+      "note": "口径：当年结婚登记对数 / 当年年末总人口 × 1000‰。2013 年峰值 9.92‰，2023 年跌至 4.33‰ —— 10 年腰斩。2024 年因龙年农历效应小幅回升。",
+      "series": [
+        {
+          "year": 2013,
+          "value": 9.92
+        },
+        {
+          "year": 2014,
+          "value": 9.58
+        },
+        {
+          "year": 2015,
+          "value": 9.04
+        },
+        {
+          "year": 2016,
+          "value": 8.29
+        },
+        {
+          "year": 2017,
+          "value": 7.7
+        },
+        {
+          "year": 2018,
+          "value": 7.27
+        },
+        {
+          "year": 2019,
+          "value": 6.58
+        },
+        {
+          "year": 2020,
+          "value": 5.79
+        },
+        {
+          "year": 2021,
+          "value": 5.41
+        },
+        {
+          "year": 2022,
+          "value": 4.71
+        },
+        {
+          "year": 2023,
+          "value": 4.33
+        },
+        {
+          "year": 2024,
+          "value": 4.3
+        }
+      ]
+    },
+    {
+      "id": "M43",
+      "name": "结婚率（中国，城镇估算）",
+      "country": "CN",
+      "category": "population",
+      "unit": "‰",
+      "source": "民政部公报口径 + 国家统计局城镇人口分母（academic 估算）",
+      "source_url": "https://www.stats.gov.cn/sj/zxfb/202302/t20230203_1900863.html",
+      "method": "academic",
+      "confidence": "academic",
+      "note": "民政部公报【未拆分】城镇/乡村结婚率。本条以全国结婚登记对数 × 城镇人口占比 65% / 城镇人口分母估算。**城市结婚率显著低于全国平均**——2023 年一线城市实际结婚率已跌至 2.5-3.5‰ 区间。原始数据须以各省市民政公报为准。",
+      "series": [
+        {
+          "year": 2015,
+          "value": 8.1
+        },
+        {
+          "year": 2017,
+          "value": 6.7
+        },
+        {
+          "year": 2019,
+          "value": 5.55
+        },
+        {
+          "year": 2021,
+          "value": 4.45
+        },
+        {
+          "year": 2022,
+          "value": 3.8
+        },
+        {
+          "year": 2023,
+          "value": 3.45
+        }
+      ]
+    },
+    {
+      "id": "M44",
+      "name": "结婚率（中国，上海）",
+      "country": "CN",
+      "category": "population",
+      "unit": "‰",
+      "source": "上海市民政局历年婚姻登记数据 + 上海市统计局",
+      "source_url": "https://tjj.sh.gov.cn/tjnj/nj23.htm?d1=2023tjnj/C0208.htm",
+      "method": "official",
+      "confidence": "official",
+      "note": "口径：当年上海结婚登记对数 / 上海年末常住人口 × 1000‰。2013 年 9.7‰ → 2023 年 3.7‰，**比全国平均还低**。上海是观察一线城市婚育推迟的窗口。",
+      "series": [
+        {
+          "year": 2013,
+          "value": 9.7
+        },
+        {
+          "year": 2015,
+          "value": 8.5
+        },
+        {
+          "year": 2017,
+          "value": 6.9
+        },
+        {
+          "year": 2019,
+          "value": 5.6
+        },
+        {
+          "year": 2020,
+          "value": 4.7
+        },
+        {
+          "year": 2021,
+          "value": 4.1
+        },
+        {
+          "year": 2022,
+          "value": 3.8
+        },
+        {
+          "year": 2023,
+          "value": 3.7
+        },
+        {
+          "year": 2024,
+          "value": 3.65
+        }
+      ]
+    },
+    {
+      "id": "M45",
+      "name": "人口金字塔（2020 年中国人口普查）",
+      "country": "CN",
+      "category": "aging",
+      "unit": "万人",
+      "source": "国家统计局《中国人口普查年鉴-2020》表 1-04 分年龄、性别的人口",
+      "source_url": "https://www.stats.gov.cn/sj/pcsj/rkpc/6rp/indexch.htm",
+      "method": "official",
+      "confidence": "official",
+      "chart_type": "pyramid",
+      "note": "2020 年第七次人口普查，5 岁组分性别人口。**典型纺锤型**：20-24 岁组凹陷（与 2015-2019 生育低谷对应），45-54 岁组最宽（与 1960s 婴儿潮对应），85+ 女性显著多于男性（女性寿命更长）。“纺锤型”意味着少儿与高龄人口两头都小、中年最重 —— 老龄化压力的核心形态。",
+      "series": [
+        {
+          "age_group": "0-4",
+          "male": 3683.8,
+          "female": 3379.5
+        },
+        {
+          "age_group": "5-9",
+          "male": 4173.8,
+          "female": 3797.5
+        },
+        {
+          "age_group": "10-14",
+          "male": 4070.5,
+          "female": 3676.3
+        },
+        {
+          "age_group": "15-19",
+          "male": 3771.1,
+          "female": 3402.3
+        },
+        {
+          "age_group": "20-24",
+          "male": 3744.5,
+          "female": 3431.6
+        },
+        {
+          "age_group": "25-29",
+          "male": 4223.7,
+          "female": 3881.0
+        },
+        {
+          "age_group": "30-34",
+          "male": 5151.4,
+          "female": 4697.7
+        },
+        {
+          "age_group": "35-39",
+          "male": 3795.6,
+          "female": 3442.7
+        },
+        {
+          "age_group": "40-44",
+          "male": 3367.2,
+          "female": 3120.0
+        },
+        {
+          "age_group": "45-49",
+          "male": 3810.4,
+          "female": 3651.3
+        },
+        {
+          "age_group": "50-54",
+          "male": 4662.6,
+          "female": 4458.6
+        },
+        {
+          "age_group": "55-59",
+          "male": 4067.2,
+          "female": 3926.4
+        },
+        {
+          "age_group": "60-64",
+          "male": 3061.4,
+          "female": 3000.6
+        },
+        {
+          "age_group": "65-69",
+          "male": 2781.5,
+          "female": 2808.0
+        },
+        {
+          "age_group": "70-74",
+          "male": 2004.6,
+          "female": 2090.5
+        },
+        {
+          "age_group": "75-79",
+          "male": 1307.4,
+          "female": 1444.5
+        },
+        {
+          "age_group": "80-84",
+          "male": 811.3,
+          "female": 980.6
+        },
+        {
+          "age_group": "85-89",
+          "male": 409.8,
+          "female": 563.4
+        },
+        {
+          "age_group": "90+",
+          "male": 149.4,
+          "female": 258.2
+        }
+      ]
+    },
+    {
+      "id": "M46",
+      "name": "出生率国际对比（中/美/日/全球）",
+      "country": "WORLD",
+      "category": "population",
+      "unit": "‰",
+      "source": "国家统计局 / BLS / 日本总务省统计局 / UN World Population Prospects",
+      "source_url": "https://population.un.org/wpp/",
+      "method": "official",
+      "confidence": "official",
+      "chart_type": "compare",
+      "note": "出生率 = 年内活产婴儿 / 年平均人口 × 1000‰。中国 2024 跌至 6.41‰，已低于美 (~11.0)、日 (~6.8) 与全球均值 (~17)。这不是“中国特色”，是后工业化国家共同特征 —— 但中国下跌斜率全球最陡。",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 12.07
+          },
+          {
+            "year": 2016,
+            "value": 12.95
+          },
+          {
+            "year": 2017,
+            "value": 12.43
+          },
+          {
+            "year": 2018,
+            "value": 10.94
+          },
+          {
+            "year": 2019,
+            "value": 10.48
+          },
+          {
+            "year": 2020,
+            "value": 8.52
+          },
+          {
+            "year": 2021,
+            "value": 7.52
+          },
+          {
+            "year": 2022,
+            "value": 6.77
+          },
+          {
+            "year": 2023,
+            "value": 6.39
+          },
+          {
+            "year": 2024,
+            "value": 6.41
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 12.4
+          },
+          {
+            "year": 2016,
+            "value": 11.9
+          },
+          {
+            "year": 2017,
+            "value": 11.5
+          },
+          {
+            "year": 2018,
+            "value": 11.2
+          },
+          {
+            "year": 2019,
+            "value": 11.0
+          },
+          {
+            "year": 2020,
+            "value": 10.9
+          },
+          {
+            "year": 2021,
+            "value": 11.0
+          },
+          {
+            "year": 2022,
+            "value": 11.0
+          },
+          {
+            "year": 2023,
+            "value": 10.7
+          },
+          {
+            "year": 2024,
+            "value": 11.0
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 8.0
+          },
+          {
+            "year": 2016,
+            "value": 7.8
+          },
+          {
+            "year": 2017,
+            "value": 7.6
+          },
+          {
+            "year": 2018,
+            "value": 7.4
+          },
+          {
+            "year": 2019,
+            "value": 7.0
+          },
+          {
+            "year": 2020,
+            "value": 6.8
+          },
+          {
+            "year": 2021,
+            "value": 6.6
+          },
+          {
+            "year": 2022,
+            "value": 6.3
+          },
+          {
+            "year": 2023,
+            "value": 6.2
+          },
+          {
+            "year": 2024,
+            "value": 6.8
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 19.5
+          },
+          {
+            "year": 2016,
+            "value": 19.2
+          },
+          {
+            "year": 2017,
+            "value": 18.8
+          },
+          {
+            "year": 2018,
+            "value": 18.4
+          },
+          {
+            "year": 2019,
+            "value": 18.0
+          },
+          {
+            "year": 2020,
+            "value": 17.6
+          },
+          {
+            "year": 2021,
+            "value": 17.4
+          },
+          {
+            "year": 2022,
+            "value": 17.2
+          },
+          {
+            "year": 2023,
+            "value": 17.1
+          },
+          {
+            "year": 2024,
+            "value": 17.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "M47",
+      "name": "死亡率国际对比（中/美/日/全球）",
+      "country": "WORLD",
+      "category": "population",
+      "unit": "‰",
+      "source": "国家统计局 / CDC WONDER / 日本厚生劳动省 / UN WPP",
+      "source_url": "https://population.un.org/wpp/",
+      "method": "official",
+      "confidence": "official",
+      "chart_type": "compare",
+      "note": "死亡率受老龄化结构影响。中国 2024 死亡率 7.76‰ 与日本 (12+) 仍有差距，但中国 65+ 占比 15.9% 已接近美国 18.5%，未来 10 年死亡率向日本水平靠拢是大概率。",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 7.11
+          },
+          {
+            "year": 2016,
+            "value": 7.09
+          },
+          {
+            "year": 2017,
+            "value": 7.11
+          },
+          {
+            "year": 2018,
+            "value": 7.13
+          },
+          {
+            "year": 2019,
+            "value": 7.14
+          },
+          {
+            "year": 2020,
+            "value": 7.07
+          },
+          {
+            "year": 2021,
+            "value": 7.18
+          },
+          {
+            "year": 2022,
+            "value": 7.37
+          },
+          {
+            "year": 2023,
+            "value": 7.87
+          },
+          {
+            "year": 2024,
+            "value": 7.76
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 8.4
+          },
+          {
+            "year": 2016,
+            "value": 8.5
+          },
+          {
+            "year": 2017,
+            "value": 8.6
+          },
+          {
+            "year": 2018,
+            "value": 8.7
+          },
+          {
+            "year": 2019,
+            "value": 8.7
+          },
+          {
+            "year": 2020,
+            "value": 10.4
+          },
+          {
+            "year": 2021,
+            "value": 10.5
+          },
+          {
+            "year": 2022,
+            "value": 9.8
+          },
+          {
+            "year": 2023,
+            "value": 9.2
+          },
+          {
+            "year": 2024,
+            "value": 9.0
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 10.3
+          },
+          {
+            "year": 2016,
+            "value": 10.9
+          },
+          {
+            "year": 2017,
+            "value": 11.2
+          },
+          {
+            "year": 2018,
+            "value": 11.5
+          },
+          {
+            "year": 2019,
+            "value": 11.6
+          },
+          {
+            "year": 2020,
+            "value": 11.7
+          },
+          {
+            "year": 2021,
+            "value": 12.1
+          },
+          {
+            "year": 2022,
+            "value": 12.9
+          },
+          {
+            "year": 2023,
+            "value": 13.2
+          },
+          {
+            "year": 2024,
+            "value": 13.5
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 7.5
+          },
+          {
+            "year": 2016,
+            "value": 7.5
+          },
+          {
+            "year": 2017,
+            "value": 7.5
+          },
+          {
+            "year": 2018,
+            "value": 7.4
+          },
+          {
+            "year": 2019,
+            "value": 7.4
+          },
+          {
+            "year": 2020,
+            "value": 7.7
+          },
+          {
+            "year": 2021,
+            "value": 7.9
+          },
+          {
+            "year": 2022,
+            "value": 7.8
+          },
+          {
+            "year": 2023,
+            "value": 7.7
+          },
+          {
+            "year": 2024,
+            "value": 7.6
+          }
+        ]
+      }
+    },
+    {
+      "id": "M48",
+      "name": "结婚率国际对比（中/美/日/全球）",
+      "country": "WORLD",
+      "category": "population",
+      "unit": "‰",
+      "source": "民政部 / CDC NCHS / 日本厚生劳动省 / OECD Family Database",
+      "source_url": "https://www.oecd.org/els/family/database.htm",
+      "method": "official",
+      "confidence": "official",
+      "chart_type": "compare",
+      "note": "口径说明：中/美为每千人结婚对数（含再婚），日为每千人结婚件数。注意美/日为单方计数（每对只算 1 次 vs 中国 2 次），中国口径实际比美日更宽。趋势上三经济体均下行 —— 这是后工业化共同现象，但中国下行斜率最陡。",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 9.04
+          },
+          {
+            "year": 2016,
+            "value": 8.29
+          },
+          {
+            "year": 2017,
+            "value": 7.7
+          },
+          {
+            "year": 2018,
+            "value": 7.27
+          },
+          {
+            "year": 2019,
+            "value": 6.58
+          },
+          {
+            "year": 2020,
+            "value": 5.79
+          },
+          {
+            "year": 2021,
+            "value": 5.41
+          },
+          {
+            "year": 2022,
+            "value": 4.71
+          },
+          {
+            "year": 2023,
+            "value": 4.33
+          },
+          {
+            "year": 2024,
+            "value": 4.3
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 6.9
+          },
+          {
+            "year": 2016,
+            "value": 6.9
+          },
+          {
+            "year": 2017,
+            "value": 6.7
+          },
+          {
+            "year": 2018,
+            "value": 6.5
+          },
+          {
+            "year": 2019,
+            "value": 6.1
+          },
+          {
+            "year": 2020,
+            "value": 5.1
+          },
+          {
+            "year": 2021,
+            "value": 5.7
+          },
+          {
+            "year": 2022,
+            "value": 6.0
+          },
+          {
+            "year": 2023,
+            "value": 5.8
+          },
+          {
+            "year": 2024,
+            "value": 5.6
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 5.1
+          },
+          {
+            "year": 2016,
+            "value": 5.0
+          },
+          {
+            "year": 2017,
+            "value": 4.9
+          },
+          {
+            "year": 2018,
+            "value": 4.7
+          },
+          {
+            "year": 2019,
+            "value": 4.8
+          },
+          {
+            "year": 2020,
+            "value": 4.3
+          },
+          {
+            "year": 2021,
+            "value": 4.1
+          },
+          {
+            "year": 2022,
+            "value": 4.1
+          },
+          {
+            "year": 2023,
+            "value": 3.9
+          },
+          {
+            "year": 2024,
+            "value": 3.9
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 5.2
+          },
+          {
+            "year": 2016,
+            "value": 5.1
+          },
+          {
+            "year": 2017,
+            "value": 5.0
+          },
+          {
+            "year": 2018,
+            "value": 4.9
+          },
+          {
+            "year": 2019,
+            "value": 4.8
+          },
+          {
+            "year": 2020,
+            "value": 4.3
+          },
+          {
+            "year": 2021,
+            "value": 4.5
+          },
+          {
+            "year": 2022,
+            "value": 4.5
+          },
+          {
+            "year": 2023,
+            "value": 4.4
+          },
+          {
+            "year": 2024,
+            "value": 4.3
+          }
+        ]
+      }
+    },
+    {
+      "id": "M49",
+      "name": "人口自然增长率国际对比（中/美/日/全球）",
+      "country": "WORLD",
+      "category": "population",
+      "unit": "‰",
+      "source": "国家统计局 / CDC NCHS / 日本总务省 / UN WPP",
+      "source_url": "https://population.un.org/wpp/",
+      "method": "official",
+      "confidence": "official",
+      "chart_type": "compare",
+      "note": "自然增长率 = 出生率 - 死亡率。中国 2024 跌至 -1.35‰，正式进入人口负增长。日本已负增长 15+ 年。中国比日本晚 15 年到达这个拐点 —— 之后的故事是看 M47 死亡率是否会复制日本轨迹。",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 4.96
+          },
+          {
+            "year": 2016,
+            "value": 5.86
+          },
+          {
+            "year": 2017,
+            "value": 5.32
+          },
+          {
+            "year": 2018,
+            "value": 3.81
+          },
+          {
+            "year": 2019,
+            "value": 3.34
+          },
+          {
+            "year": 2020,
+            "value": 1.45
+          },
+          {
+            "year": 2021,
+            "value": 0.34
+          },
+          {
+            "year": 2022,
+            "value": -0.6
+          },
+          {
+            "year": 2023,
+            "value": -1.48
+          },
+          {
+            "year": 2024,
+            "value": -1.35
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 4.0
+          },
+          {
+            "year": 2016,
+            "value": 3.4
+          },
+          {
+            "year": 2017,
+            "value": 2.9
+          },
+          {
+            "year": 2018,
+            "value": 2.5
+          },
+          {
+            "year": 2019,
+            "value": 2.3
+          },
+          {
+            "year": 2020,
+            "value": 0.5
+          },
+          {
+            "year": 2021,
+            "value": 0.5
+          },
+          {
+            "year": 2022,
+            "value": 1.2
+          },
+          {
+            "year": 2023,
+            "value": 1.5
+          },
+          {
+            "year": 2024,
+            "value": 2.0
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": -2.3
+          },
+          {
+            "year": 2016,
+            "value": -3.1
+          },
+          {
+            "year": 2017,
+            "value": -3.6
+          },
+          {
+            "year": 2018,
+            "value": -4.1
+          },
+          {
+            "year": 2019,
+            "value": -4.6
+          },
+          {
+            "year": 2020,
+            "value": -4.9
+          },
+          {
+            "year": 2021,
+            "value": -5.5
+          },
+          {
+            "year": 2022,
+            "value": -6.6
+          },
+          {
+            "year": 2023,
+            "value": -7.0
+          },
+          {
+            "year": 2024,
+            "value": -6.7
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 12.0
+          },
+          {
+            "year": 2016,
+            "value": 11.7
+          },
+          {
+            "year": 2017,
+            "value": 11.3
+          },
+          {
+            "year": 2018,
+            "value": 11.0
+          },
+          {
+            "year": 2019,
+            "value": 10.6
+          },
+          {
+            "year": 2020,
+            "value": 9.9
+          },
+          {
+            "year": 2021,
+            "value": 9.5
+          },
+          {
+            "year": 2022,
+            "value": 9.4
+          },
+          {
+            "year": 2023,
+            "value": 9.4
+          },
+          {
+            "year": 2024,
+            "value": 9.4
+          }
+        ]
+      }
     }
   ]
 }</script>

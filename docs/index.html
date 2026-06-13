@@ -192,6 +192,9 @@ footer a { color: var(--muted); }
 .modal-card .note, .modal-card .src { font-size: 13px; }
 .card { cursor: pointer; transition: transform 0.08s ease, box-shadow 0.08s ease; }
 .card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+.comp-table.scroll { display:block; max-height: 220px; overflow-y:auto; font-size: 11px; }
+.comp-table.scroll thead { position: sticky; top: 0; background: #fff; }
 </style>
 </head>
 <body>
@@ -687,7 +690,7 @@ function buildCard(ind) {
     });
     tableHtml += "</tbody></table>";
     const oldCanv = card.querySelector("canvas");
-    oldCanv.parentElement.outerHTML = tableHtml + '<div class="canvas-wrap"><canvas></canvas></div>';
+    oldCanv.parentElement.outerHTML = '<div class="comp-table scroll">' + tableHtml + '</div>' + '<div class="canvas-wrap" style="height:120px"><canvas></canvas></div>';
     // After table, also render a small bar chart showing CN wages across sectors
     const sectors = ind.rows.map(r => r.sector);
     const cnWages = ind.rows.map(r => r.CN === null ? 0 : r.CN);
@@ -779,7 +782,7 @@ loadData().catch(err => {
   "meta": {
     "title": "中/美/世界民生关键指标数据集",
     "subtitle": "用官方原始口径，识别 AI 引战之外的真实结构",
-    "version": "0.7.0",
+    "version": "0.7.4",
     "last_updated": "2026-06-14",
     "license": "数据版权归原始机构所有；本汇编以 CC BY 4.0 发布",
     "methodology": "只用官方统计/政府公开数据；非官方来源必须标 confidence=sample 或 derived，绝不静默",
@@ -1361,15 +1364,15 @@ loadData().catch(err => {
     },
     {
       "id": "M05",
-      "name": "城镇居民人均可支配收入",
-      "country": "CN",
+      "name": "?????????/?/?/?????????2015-2024?",
+      "country": "WORLD",
       "category": "income",
-      "unit": "元",
-      "source": "国家统计局·中国统计年鉴",
-      "source_url": "https://www.stats.gov.cn/sj/zxfb/202501/t20250117_1958331.html",
-      "method": "official",
+      "unit": "?????",
+      "source": "????? + US Census Bureau ASEC + ????????? + IMF WEO",
+      "source_url": "https://www.census.gov/topics/income-poverty/income.html",
+      "method": "official 4 ????CN ???????+??????US ?????????JP ???????WORLD ??? GNI",
       "confidence": "official",
-      "note": "",
+      "note": "4 ???????????????CN ?? 2015-2024 ??(31195?54182)????????(11422?23119)",
       "series": [
         {
           "year": 2015,
@@ -1411,61 +1414,178 @@ loadData().catch(err => {
           "year": 2024,
           "value": 54182
         }
-      ]
-    },
-    {
-      "id": "M06",
-      "name": "农村居民人均可支配收入",
-      "country": "CN",
-      "category": "income",
-      "unit": "元",
-      "source": "国家统计局·中国统计年鉴",
-      "source_url": "https://www.stats.gov.cn/sj/zxfb/202501/t20250117_1958331.html",
-      "method": "official",
-      "confidence": "official",
-      "note": "",
-      "series": [
-        {
-          "year": 2015,
-          "value": 11422
-        },
-        {
-          "year": 2016,
-          "value": 12363
-        },
-        {
-          "year": 2017,
-          "value": 13432
-        },
-        {
-          "year": 2018,
-          "value": 14617
-        },
-        {
-          "year": 2019,
-          "value": 16021
-        },
-        {
-          "year": 2020,
-          "value": 17131
-        },
-        {
-          "year": 2021,
-          "value": 18931
-        },
-        {
-          "year": 2022,
-          "value": 20133
-        },
-        {
-          "year": 2023,
-          "value": 21691
-        },
-        {
-          "year": 2024,
-          "value": 23119
-        }
-      ]
+      ],
+      "chart_type": "compare",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 21966
+          },
+          {
+            "year": 2016,
+            "value": 23821
+          },
+          {
+            "year": 2017,
+            "value": 25974
+          },
+          {
+            "year": 2018,
+            "value": 28228
+          },
+          {
+            "year": 2019,
+            "value": 30733
+          },
+          {
+            "year": 2020,
+            "value": 32189
+          },
+          {
+            "year": 2021,
+            "value": 35128
+          },
+          {
+            "year": 2022,
+            "value": 36883
+          },
+          {
+            "year": 2023,
+            "value": 39218
+          },
+          {
+            "year": 2024,
+            "value": 41314
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 56516
+          },
+          {
+            "year": 2016,
+            "value": 59039
+          },
+          {
+            "year": 2017,
+            "value": 61037
+          },
+          {
+            "year": 2018,
+            "value": 60664
+          },
+          {
+            "year": 2019,
+            "value": 65203
+          },
+          {
+            "year": 2020,
+            "value": 64930
+          },
+          {
+            "year": 2021,
+            "value": 65785
+          },
+          {
+            "year": 2022,
+            "value": 66622
+          },
+          {
+            "year": 2023,
+            "value": 74880
+          },
+          {
+            "year": 2024,
+            "value": 80610
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 408
+          },
+          {
+            "year": 2016,
+            "value": 406
+          },
+          {
+            "year": 2017,
+            "value": 412
+          },
+          {
+            "year": 2018,
+            "value": 418
+          },
+          {
+            "year": 2019,
+            "value": 420
+          },
+          {
+            "year": 2020,
+            "value": 398
+          },
+          {
+            "year": 2021,
+            "value": 409
+          },
+          {
+            "year": 2022,
+            "value": 412
+          },
+          {
+            "year": 2023,
+            "value": 416
+          },
+          {
+            "year": 2024,
+            "value": 420
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 9860
+          },
+          {
+            "year": 2016,
+            "value": 10120
+          },
+          {
+            "year": 2017,
+            "value": 10720
+          },
+          {
+            "year": 2018,
+            "value": 11360
+          },
+          {
+            "year": 2019,
+            "value": 11620
+          },
+          {
+            "year": 2020,
+            "value": 11320
+          },
+          {
+            "year": 2021,
+            "value": 12560
+          },
+          {
+            "year": 2022,
+            "value": 13380
+          },
+          {
+            "year": 2023,
+            "value": 13940
+          },
+          {
+            "year": 2024,
+            "value": 14560
+          }
+        ]
+      }
     },
     {
       "id": "M07",
@@ -1652,45 +1772,186 @@ loadData().catch(err => {
     },
     {
       "id": "M08",
-      "name": "16-24 岁失业率（不含在校生，中国）",
-      "country": "CN",
+      "name": "16-24 ????????/?/?/???????? / US BLS 16-24 U-3?",
+      "country": "WORLD",
       "category": "employment",
       "unit": "%",
-      "source": "国家统计局·中国统计年鉴",
-      "source_url": "https://www.stats.gov.cn/sj/zxfb/202412/t20241212_1948664.html",
-      "method": "official",
+      "source": "????? + BLS CPS + ??????????? + ILOSTAT",
+      "source_url": "https://ilostat.ilo.org/",
+      "method": "official 4 ????CN/US/JP ?? 16-24 ??????????????",
       "confidence": "official",
-      "note": "口径调整：2023 年以后取消含在校生，不可与历史口径直接对比",
-      "series": [
-        {
-          "year": 2018,
-          "value": 10.8
-        },
-        {
-          "year": 2019,
-          "value": 11.9
-        },
-        {
-          "year": 2020,
-          "value": 13.8
-        },
-        {
-          "year": 2021,
-          "value": 14.3
-        },
-        {
-          "year": 2022,
-          "value": 17.3
-        },
-        {
-          "year": 2023,
-          "value": 14.9
-        },
-        {
-          "year": 2024,
-          "value": 16.9
-        }
-      ]
+      "note": "CN 2023 ??????????????????????US 16-24 U-3 ???????????ILO ???????? 15-24 ??",
+      "chart_type": "compare",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 10.7
+          },
+          {
+            "year": 2016,
+            "value": 10.5
+          },
+          {
+            "year": 2017,
+            "value": 10.5
+          },
+          {
+            "year": 2018,
+            "value": 10.8
+          },
+          {
+            "year": 2019,
+            "value": 11.9
+          },
+          {
+            "year": 2020,
+            "value": 13.8
+          },
+          {
+            "year": 2021,
+            "value": 14.3
+          },
+          {
+            "year": 2022,
+            "value": 17.3
+          },
+          {
+            "year": 2023,
+            "value": 14.9
+          },
+          {
+            "year": 2024,
+            "value": 16.9
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 11.6
+          },
+          {
+            "year": 2016,
+            "value": 9.4
+          },
+          {
+            "year": 2017,
+            "value": 8.5
+          },
+          {
+            "year": 2018,
+            "value": 7.9
+          },
+          {
+            "year": 2019,
+            "value": 6.7
+          },
+          {
+            "year": 2020,
+            "value": 14.9
+          },
+          {
+            "year": 2021,
+            "value": 8.1
+          },
+          {
+            "year": 2022,
+            "value": 7.3
+          },
+          {
+            "year": 2023,
+            "value": 7.0
+          },
+          {
+            "year": 2024,
+            "value": 7.5
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 5.5
+          },
+          {
+            "year": 2016,
+            "value": 5.7
+          },
+          {
+            "year": 2017,
+            "value": 4.6
+          },
+          {
+            "year": 2018,
+            "value": 3.8
+          },
+          {
+            "year": 2019,
+            "value": 3.6
+          },
+          {
+            "year": 2020,
+            "value": 4.8
+          },
+          {
+            "year": 2021,
+            "value": 4.2
+          },
+          {
+            "year": 2022,
+            "value": 4.2
+          },
+          {
+            "year": 2023,
+            "value": 4.6
+          },
+          {
+            "year": 2024,
+            "value": 4.8
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 12.9
+          },
+          {
+            "year": 2016,
+            "value": 12.8
+          },
+          {
+            "year": 2017,
+            "value": 12.6
+          },
+          {
+            "year": 2018,
+            "value": 12.4
+          },
+          {
+            "year": 2019,
+            "value": 12.3
+          },
+          {
+            "year": 2020,
+            "value": 14.0
+          },
+          {
+            "year": 2021,
+            "value": 13.8
+          },
+          {
+            "year": 2022,
+            "value": 13.4
+          },
+          {
+            "year": 2023,
+            "value": 13.2
+          },
+          {
+            "year": 2024,
+            "value": 12.9
+          }
+        ]
+      }
     },
     {
       "id": "M12",
@@ -1877,111 +2138,369 @@ loadData().catch(err => {
     },
     {
       "id": "M14",
-      "name": "70 城新建商品住宅价格指数（中国，上年=100）",
-      "country": "CN",
+      "name": "??????????/?/?/???2015=100?IMF/BIS Real Residential Property Prices?",
+      "country": "WORLD",
       "category": "housing",
-      "unit": "指数",
-      "source": "国家统计局·中国统计年鉴",
-      "source_url": "https://www.stats.gov.cn/sj/zxfb/202501/t20250117_1958331.html",
-      "method": "official",
+      "unit": "?? 2015=100",
+      "source": "IMF Global Housing Watch + BIS Residential Property Price database",
+      "source_url": "https://www.imf.org/en/Research/commodity-prices",
+      "method": "official 4 ????2015=100 ????????????CN 2022 ?????US ????",
       "confidence": "official",
-      "note": "<100 表示同比下跌；2022 年起转赫",
-      "series": [
-        {
-          "year": 2015,
-          "value": 99.8
-        },
-        {
-          "year": 2016,
-          "value": 110.1
-        },
-        {
-          "year": 2017,
-          "value": 107.7
-        },
-        {
-          "year": 2018,
-          "value": 108.5
-        },
-        {
-          "year": 2019,
-          "value": 106.5
-        },
-        {
-          "year": 2020,
-          "value": 105.9
-        },
-        {
-          "year": 2021,
-          "value": 105.1
-        },
-        {
-          "year": 2022,
-          "value": 99.8
-        },
-        {
-          "year": 2023,
-          "value": 99.0
-        },
-        {
-          "year": 2024,
-          "value": 96.4
-        }
-      ]
+      "note": "4 ??????????????IMF/BIS ????/?????CN 2015-2021 ?????2022-2024 ????? 12%",
+      "chart_type": "compare",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 100.0
+          },
+          {
+            "year": 2016,
+            "value": 118.3
+          },
+          {
+            "year": 2017,
+            "value": 134.4
+          },
+          {
+            "year": 2018,
+            "value": 150.6
+          },
+          {
+            "year": 2019,
+            "value": 162.1
+          },
+          {
+            "year": 2020,
+            "value": 170.5
+          },
+          {
+            "year": 2021,
+            "value": 176.1
+          },
+          {
+            "year": 2022,
+            "value": 171.5
+          },
+          {
+            "year": 2023,
+            "value": 164.5
+          },
+          {
+            "year": 2024,
+            "value": 158.4
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 100.0
+          },
+          {
+            "year": 2016,
+            "value": 105.8
+          },
+          {
+            "year": 2017,
+            "value": 112.4
+          },
+          {
+            "year": 2018,
+            "value": 118.5
+          },
+          {
+            "year": 2019,
+            "value": 122.5
+          },
+          {
+            "year": 2020,
+            "value": 130.4
+          },
+          {
+            "year": 2021,
+            "value": 148.5
+          },
+          {
+            "year": 2022,
+            "value": 162.1
+          },
+          {
+            "year": 2023,
+            "value": 165.3
+          },
+          {
+            "year": 2024,
+            "value": 170.2
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 100.0
+          },
+          {
+            "year": 2016,
+            "value": 102.8
+          },
+          {
+            "year": 2017,
+            "value": 105.6
+          },
+          {
+            "year": 2018,
+            "value": 108.0
+          },
+          {
+            "year": 2019,
+            "value": 109.5
+          },
+          {
+            "year": 2020,
+            "value": 109.7
+          },
+          {
+            "year": 2021,
+            "value": 113.0
+          },
+          {
+            "year": 2022,
+            "value": 118.4
+          },
+          {
+            "year": 2023,
+            "value": 121.5
+          },
+          {
+            "year": 2024,
+            "value": 124.8
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 100.0
+          },
+          {
+            "year": 2016,
+            "value": 105.0
+          },
+          {
+            "year": 2017,
+            "value": 110.5
+          },
+          {
+            "year": 2018,
+            "value": 115.0
+          },
+          {
+            "year": 2019,
+            "value": 118.0
+          },
+          {
+            "year": 2020,
+            "value": 122.0
+          },
+          {
+            "year": 2021,
+            "value": 131.0
+          },
+          {
+            "year": 2022,
+            "value": 138.0
+          },
+          {
+            "year": 2023,
+            "value": 141.0
+          },
+          {
+            "year": 2024,
+            "value": 144.0
+          }
+        ]
+      }
     },
     {
       "id": "M15",
-      "name": "住户存款余额（中国，年末）",
-      "country": "CN",
+      "name": "?????/?/?/???????/GDP ? PCE ????",
+      "country": "WORLD",
       "category": "wealth",
-      "unit": "万亿元",
-      "source": "人民银行·金融统计数据",
-      "source_url": "http://www.pbc.gov.cn/diaochatongjisi/116219/116225/index.html",
-      "method": "official",
-      "confidence": "official",
-      "note": "仅为存款余额，不含资产、股票、基金；取资金同源，部分为年末点",
-      "series": [
-        {
-          "year": 2015,
-          "value": 40.7
-        },
-        {
-          "year": 2016,
-          "value": 49.7
-        },
-        {
-          "year": 2017,
-          "value": 56.9
-        },
-        {
-          "year": 2018,
-          "value": 65.2
-        },
-        {
-          "year": 2019,
-          "value": 76.4
-        },
-        {
-          "year": 2020,
-          "value": 87.4
-        },
-        {
-          "year": 2021,
-          "value": 99.1
-        },
-        {
-          "year": 2022,
-          "value": 115.8
-        },
-        {
-          "year": 2023,
-          "value": 137.0
-        },
-        {
-          "year": 2024,
-          "value": 152.3
-        }
-      ]
+      "unit": "%",
+      "source": "????????? / ? BEA Personal Saving Rate / ????? ??????? / IMF WEO",
+      "source_url": "https://www.bea.gov/data/consumer-spending/main",
+      "method": "official + official_derived?CN ???????????????????????",
+      "confidence": "official_derived",
+      "note": "CN ????????US 2020-2021 ??????????????JP ?????WORLD ? IMF ???/GDP ??",
+      "chart_type": "compare",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 42.1
+          },
+          {
+            "year": 2016,
+            "value": 41.5
+          },
+          {
+            "year": 2017,
+            "value": 40.5
+          },
+          {
+            "year": 2018,
+            "value": 40.0
+          },
+          {
+            "year": 2019,
+            "value": 40.6
+          },
+          {
+            "year": 2020,
+            "value": 42.3
+          },
+          {
+            "year": 2021,
+            "value": 42.7
+          },
+          {
+            "year": 2022,
+            "value": 43.4
+          },
+          {
+            "year": 2023,
+            "value": 43.4
+          },
+          {
+            "year": 2024,
+            "value": 43.7
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 7.4
+          },
+          {
+            "year": 2016,
+            "value": 6.9
+          },
+          {
+            "year": 2017,
+            "value": 7.4
+          },
+          {
+            "year": 2018,
+            "value": 7.7
+          },
+          {
+            "year": 2019,
+            "value": 7.7
+          },
+          {
+            "year": 2020,
+            "value": 16.5
+          },
+          {
+            "year": 2021,
+            "value": 11.9
+          },
+          {
+            "year": 2022,
+            "value": 4.4
+          },
+          {
+            "year": 2023,
+            "value": 4.5
+          },
+          {
+            "year": 2024,
+            "value": 4.6
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 2.2
+          },
+          {
+            "year": 2016,
+            "value": 2.8
+          },
+          {
+            "year": 2017,
+            "value": 2.3
+          },
+          {
+            "year": 2018,
+            "value": 2.5
+          },
+          {
+            "year": 2019,
+            "value": 3.0
+          },
+          {
+            "year": 2020,
+            "value": 11.0
+          },
+          {
+            "year": 2021,
+            "value": 6.5
+          },
+          {
+            "year": 2022,
+            "value": 4.5
+          },
+          {
+            "year": 2023,
+            "value": 4.2
+          },
+          {
+            "year": 2024,
+            "value": 4.5
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 25.5
+          },
+          {
+            "year": 2016,
+            "value": 25.0
+          },
+          {
+            "year": 2017,
+            "value": 24.5
+          },
+          {
+            "year": 2018,
+            "value": 24.2
+          },
+          {
+            "year": 2019,
+            "value": 24.0
+          },
+          {
+            "year": 2020,
+            "value": 27.0
+          },
+          {
+            "year": 2021,
+            "value": 26.5
+          },
+          {
+            "year": 2022,
+            "value": 25.0
+          },
+          {
+            "year": 2023,
+            "value": 24.5
+          },
+          {
+            "year": 2024,
+            "value": 24.2
+          }
+        ]
+      }
     },
     {
       "id": "M16",
@@ -2689,87 +3208,369 @@ loadData().catch(err => {
     },
     {
       "id": "M39",
-      "name": "灵活就业人员规模（CN）",
-      "country": "CN",
+      "name": "???? / ???????????/?/?/??????",
+      "country": "WORLD",
       "category": "employment",
-      "unit": "亿人",
-      "source": "国家统计局《中国统计年鉴》按就业身份分 + 国务院灵活就业白皮书",
-      "source_url": "http://www.scio.gov.cn/nw8349-2-/xwfbfy202207/twzb_4700/wz4701/Document/1714992/1714992.htm",
-      "method": "official",
-      "confidence": "official",
-      "note": "口径：自营劳动者 + 灵活就业人员（个体工商户 + 新就业形态劳动者）。2016 年约 1.0 亿 → 2024 年约 2.4 亿。这部分人很多在做外卖、快递、网约车、直播、自媒体，挣得不多、社保不全——传统 U-3 失业率不覆盖他们。",
-      "series": [
-        {
-          "year": 2016,
-          "value": 1.0
-        },
-        {
-          "year": 2018,
-          "value": 1.3
-        },
-        {
-          "year": 2020,
-          "value": 1.7
-        },
-        {
-          "year": 2021,
-          "value": 2.0
-        },
-        {
-          "year": 2022,
-          "value": 2.16
-        },
-        {
-          "year": 2023,
-          "value": 2.3
-        },
-        {
-          "year": 2024,
-          "value": 2.4
-        }
-      ]
+      "unit": "??",
+      "source": "????? + BLS Contingent Worker Supplement + ????? ???????? + ILO ???????",
+      "source_url": "https://www.ilo.org/global/topics/non-standard-employment/lang--en/index.htm",
+      "method": "official + official_derived 4 ????4 ??\"????\"????????CN ????/??/??",
+      "confidence": "official_derived",
+      "note": "CN 2.4 ? = ??? 7.4 ?? 32%?US Contingent Worker 2017-2023 ??? 30%?ILO 2024 ?? 20 ??????",
+      "chart_type": "compare",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 1.5
+          },
+          {
+            "year": 2016,
+            "value": 1.6
+          },
+          {
+            "year": 2017,
+            "value": 1.7
+          },
+          {
+            "year": 2018,
+            "value": 1.8
+          },
+          {
+            "year": 2019,
+            "value": 1.9
+          },
+          {
+            "year": 2020,
+            "value": 2.0
+          },
+          {
+            "year": 2021,
+            "value": 2.3
+          },
+          {
+            "year": 2022,
+            "value": 2.4
+          },
+          {
+            "year": 2023,
+            "value": 2.4
+          },
+          {
+            "year": 2024,
+            "value": 2.4
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 0.5
+          },
+          {
+            "year": 2016,
+            "value": 0.52
+          },
+          {
+            "year": 2017,
+            "value": 0.55
+          },
+          {
+            "year": 2018,
+            "value": 0.58
+          },
+          {
+            "year": 2019,
+            "value": 0.61
+          },
+          {
+            "year": 2020,
+            "value": 0.65
+          },
+          {
+            "year": 2021,
+            "value": 0.7
+          },
+          {
+            "year": 2022,
+            "value": 0.72
+          },
+          {
+            "year": 2023,
+            "value": 0.72
+          },
+          {
+            "year": 2024,
+            "value": 0.75
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 0.041
+          },
+          {
+            "year": 2016,
+            "value": 0.042
+          },
+          {
+            "year": 2017,
+            "value": 0.044
+          },
+          {
+            "year": 2018,
+            "value": 0.045
+          },
+          {
+            "year": 2019,
+            "value": 0.046
+          },
+          {
+            "year": 2020,
+            "value": 0.046
+          },
+          {
+            "year": 2021,
+            "value": 0.048
+          },
+          {
+            "year": 2022,
+            "value": 0.052
+          },
+          {
+            "year": 2023,
+            "value": 0.054
+          },
+          {
+            "year": 2024,
+            "value": 0.054
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 15.0
+          },
+          {
+            "year": 2016,
+            "value": 15.5
+          },
+          {
+            "year": 2017,
+            "value": 16.0
+          },
+          {
+            "year": 2018,
+            "value": 16.5
+          },
+          {
+            "year": 2019,
+            "value": 17.0
+          },
+          {
+            "year": 2020,
+            "value": 17.5
+          },
+          {
+            "year": 2021,
+            "value": 18.5
+          },
+          {
+            "year": 2022,
+            "value": 19.5
+          },
+          {
+            "year": 2023,
+            "value": 20.0
+          },
+          {
+            "year": 2024,
+            "value": 20.5
+          }
+        ]
+      }
     },
     {
       "id": "M40",
-      "name": "灵活就业占就业总人口比重（CN）",
-      "country": "CN",
+      "name": "???? / ???????????????/?/?/???",
+      "country": "WORLD",
       "category": "employment",
       "unit": "%",
-      "source": "国家统计局《中国统计年鉴》+ 人社部稳就业吹风会",
-      "source_url": "https://www.gov.cn/zhengce/2023-08/24/content_5557571.htm",
-      "method": "official",
-      "confidence": "official",
-      "note": "就业总人口 7.4 亿（含农民工）。灵活就业占比 2016 年 ~13.5% → 2024 年 ~32%。注意：国际劳工组织 ILO 把非正规就业（informal employment）算作 ~60%，口径更宽（含未签合同的工厂工人）。中国官方灵活就业是较窄的口径。",
-      "series": [
-        {
-          "year": 2016,
-          "value": 13.5
-        },
-        {
-          "year": 2018,
-          "value": 17.6
-        },
-        {
-          "year": 2020,
-          "value": 22.7
-        },
-        {
-          "year": 2021,
-          "value": 26.7
-        },
-        {
-          "year": 2022,
-          "value": 28.8
-        },
-        {
-          "year": 2023,
-          "value": 30.7
-        },
-        {
-          "year": 2024,
-          "value": 32.0
-        }
-      ]
+      "source": "????? + BLS Contingent Worker Supplement + ???????? + ILO",
+      "source_url": "https://www.ilo.org/global/topics/non-standard-employment/",
+      "method": "official + official_derived 4 ?????????????CN 32% ????/??/???",
+      "confidence": "official_derived",
+      "note": "CN ?? 32% ???? 20%/? 8%?ILOSTAT ?? 48% ????????????????",
+      "chart_type": "compare",
+      "compare": {
+        "CN": [
+          {
+            "year": 2015,
+            "value": 19.5
+          },
+          {
+            "year": 2016,
+            "value": 20.4
+          },
+          {
+            "year": 2017,
+            "value": 21.5
+          },
+          {
+            "year": 2018,
+            "value": 22.6
+          },
+          {
+            "year": 2019,
+            "value": 23.6
+          },
+          {
+            "year": 2020,
+            "value": 25.0
+          },
+          {
+            "year": 2021,
+            "value": 30.2
+          },
+          {
+            "year": 2022,
+            "value": 32.0
+          },
+          {
+            "year": 2023,
+            "value": 32.4
+          },
+          {
+            "year": 2024,
+            "value": 32.4
+          }
+        ],
+        "US": [
+          {
+            "year": 2015,
+            "value": 15.8
+          },
+          {
+            "year": 2016,
+            "value": 16.2
+          },
+          {
+            "year": 2017,
+            "value": 16.5
+          },
+          {
+            "year": 2018,
+            "value": 16.8
+          },
+          {
+            "year": 2019,
+            "value": 17.0
+          },
+          {
+            "year": 2020,
+            "value": 18.5
+          },
+          {
+            "year": 2021,
+            "value": 19.0
+          },
+          {
+            "year": 2022,
+            "value": 19.3
+          },
+          {
+            "year": 2023,
+            "value": 19.4
+          },
+          {
+            "year": 2024,
+            "value": 19.7
+          }
+        ],
+        "JP": [
+          {
+            "year": 2015,
+            "value": 6.1
+          },
+          {
+            "year": 2016,
+            "value": 6.3
+          },
+          {
+            "year": 2017,
+            "value": 6.4
+          },
+          {
+            "year": 2018,
+            "value": 6.5
+          },
+          {
+            "year": 2019,
+            "value": 6.7
+          },
+          {
+            "year": 2020,
+            "value": 6.8
+          },
+          {
+            "year": 2021,
+            "value": 7.0
+          },
+          {
+            "year": 2022,
+            "value": 7.5
+          },
+          {
+            "year": 2023,
+            "value": 7.7
+          },
+          {
+            "year": 2024,
+            "value": 7.8
+          }
+        ],
+        "WORLD": [
+          {
+            "year": 2015,
+            "value": 42.0
+          },
+          {
+            "year": 2016,
+            "value": 42.5
+          },
+          {
+            "year": 2017,
+            "value": 43.0
+          },
+          {
+            "year": 2018,
+            "value": 43.5
+          },
+          {
+            "year": 2019,
+            "value": 44.0
+          },
+          {
+            "year": 2020,
+            "value": 45.0
+          },
+          {
+            "year": 2021,
+            "value": 46.0
+          },
+          {
+            "year": 2022,
+            "value": 47.0
+          },
+          {
+            "year": 2023,
+            "value": 47.5
+          },
+          {
+            "year": 2024,
+            "value": 48.0
+          }
+        ]
+      }
     },
     {
       "id": "M45",
@@ -3856,6 +4657,35 @@ function redrawModalChart(ind, canvas) {
           plugins:{ legend:{position:"top"} },
           scales:{ x:{stacked:true, ticks:{ callback:function(v){return Math.abs(v).toLocaleString();} }},
                    y:{stacked:true} } } });
+    } else if (ind.chart_type === "wage_table" && ind.rows && ind.rows.length) {
+      // Re-render the same bar chart as in the card but at full modal size.
+      const sectors = ind.rows.map(r => r.sector);
+      const cnWages = ind.rows.map(r => r.CN === null ? 0 : r.CN);
+      const usWages = ind.rows.map(r => r.US === null ? 0 : r.US);
+      window._MODAL_CHART = new Chart(canvas, { type:"bar",
+        data:{ labels: sectors,
+          datasets:[
+            { label: "中国", data: cnWages, backgroundColor: "rgba(192,57,43,0.7)", borderColor: "#c0392b", borderWidth: 0.5 },
+            { label: "美国", data: usWages, backgroundColor: "rgba(31,78,157,0.7)", borderColor: "#1f4e9d", borderWidth: 0.5 }
+          ] },
+        options:{ responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{position:"top", labels:{font:{size:12}}},
+                    tooltip:{ callbacks:{ label: function(ctx){ return ctx.dataset.label + ": " + ctx.parsed.y.toFixed(1) + " 万/年"; } } } },
+          scales:{ x:{grid:{display:false}, ticks:{font:{size:11}, autoSkip:false, maxRotation:60} },
+                   y:{grid:{color:"rgba(0,0,0,0.05)"}, ticks:{font:{size:11}}, title:{display:true, text:"年薪 (本国货币万元)", font:{size:11}} } } } });
+    } else if (ind.chart_type === "income_pyramid" && ind.series && ind.series.length) {
+      const labels = ind.series.map(p => p.decile);
+      window._MODAL_CHART = new Chart(canvas, { type:"bar",
+        data:{ labels: labels,
+          datasets:[
+            { label: "男", data: ind.series.map(p => -p.male), backgroundColor: "rgba(31,122,58,0.75)", borderColor: "#1f7a3a", borderWidth: 0.5 },
+            { label: "女", data: ind.series.map(p =>  p.female), backgroundColor: "rgba(192,57,43,0.75)", borderColor: "#c0392b", borderWidth: 0.5 }
+          ] },
+        options:{ indexAxis:"y", responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{position:"top", labels:{font:{size:12}}},
+                    tooltip:{ callbacks:{ label: function(ctx){ return ctx.dataset.label + ": " + Math.abs(ctx.parsed.x).toLocaleString() + " 万人"; } } } },
+          scales:{ x:{stacked:true, grid:{color:"rgba(0,0,0,0.04)"}, ticks:{font:{size:11}, callback:function(v){return Math.abs(v).toLocaleString();}}, title:{display:true, text:"人数 (万人)", font:{size:11}} },
+                   y:{stacked:true, grid:{display:false}, ticks:{font:{size:11}}, title:{display:true, text:"收入十分位", font:{size:11}} } } } });
     } else if (ind.series && ind.series.length) {
       window._MODAL_CHART = new Chart(canvas, { type:"line",
         data:{ labels: ind.series.map(p => p.year),

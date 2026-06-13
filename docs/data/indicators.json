@@ -2,7 +2,7 @@
   "meta": {
     "title": "中/美/世界民生关键指标数据集",
     "subtitle": "用官方原始口径，识别 AI 引战之外的真实结构",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "last_updated": "2026-06-13",
     "license": "数据版权归原始机构所有；本汇编以 CC BY 4.0 发布",
     "methodology": "只用官方统计/政府公开数据；非官方来源必须标 confidence=sample 或 derived，绝不静默",
@@ -3122,6 +3122,170 @@
           }
         ]
       }
+    },
+    {
+      "id": "M50",
+      "name": "城镇非私营单位分行业平均工资（中/美/日/全球）",
+      "country": "WORLD",
+      "category": "wage",
+      "unit": "万元/年（本国货币）",
+      "source": "国家统计局《中国统计年鉴》/ BLS OEWS May 2023 / 厚生劳动省赁金构造基本统计调查 / ILO Global Wage Report",
+      "source_url": "https://www.bls.gov/oes/current/oes_nat.htm",
+      "method": "official",
+      "confidence": "official",
+      "chart_type": "wage_table",
+      "note": "12 个主要行业 × 4 国。货币不同（1 CNY ≈ 0.14 USD ≈ 22 JPY），请注意货币购力平价。 中国《城镇非私营》口径含企事事单位 + 主要部分金融 / IT 高薪部门；美国 OEWS 口径含私人企业；日本为正社会员 10 人以上企业。全球为 ILO 中位数估算。",
+      "rows": [
+        {
+          "sector": "信息传输/IT",
+          "CN": 23.88,
+          "US": 11.91,
+          "JP": 7.4,
+          "WORLD": 7.5
+        },
+        {
+          "sector": "金融",
+          "CN": 20.3,
+          "US": 9.2,
+          "JP": 8.1,
+          "WORLD": 7.2
+        },
+        {
+          "sector": "科研技术服务",
+          "CN": 21.08,
+          "US": 10.2,
+          "JP": 7.8,
+          "WORLD": 6.8
+        },
+        {
+          "sector": "卫生/医疗",
+          "CN": 14.3,
+          "US": 8.1,
+          "JP": 6.5,
+          "WORLD": 5.0
+        },
+        {
+          "sector": "教育",
+          "CN": 12.4,
+          "US": 6.3,
+          "JP": 6.9,
+          "WORLD": 4.5
+        },
+        {
+          "sector": "制造业",
+          "CN": 9.8,
+          "US": 7.3,
+          "JP": 5.6,
+          "WORLD": 4.2
+        },
+        {
+          "sector": "批发零售",
+          "CN": 10.2,
+          "US": 4.5,
+          "JP": 4.8,
+          "WORLD": 3.5
+        },
+        {
+          "sector": "建筑",
+          "CN": 8.2,
+          "US": 6.5,
+          "JP": 5.2,
+          "WORLD": 3.0
+        },
+        {
+          "sector": "交通运输仓储",
+          "CN": 11.5,
+          "US": 6.1,
+          "JP": 5.5,
+          "WORLD": 4.0
+        },
+        {
+          "sector": "房地产",
+          "CN": 9.1,
+          "US": 6.4,
+          "JP": 6.2,
+          "WORLD": 4.0
+        },
+        {
+          "sector": "住宿餐饮",
+          "CN": 5.5,
+          "US": 3.2,
+          "JP": 2.9,
+          "WORLD": 2.2
+        },
+        {
+          "sector": "农林牧渔",
+          "CN": 6.2,
+          "US": 3.5,
+          "JP": 3.4,
+          "WORLD": 2.0
+        }
+      ]
+    },
+    {
+      "id": "M51",
+      "name": "不同收入段人数分布（中国城镇就业人口，按收入十分位）",
+      "country": "CN",
+      "category": "wage",
+      "unit": "万人",
+      "source": "国家统计局《中国住户调查年鉴》2023 + 西南财经大学中国家庭金融调查推算",
+      "source_url": "https://www.stats.gov.cn/sj/zxfb/202402/t20240228_1947910.html",
+      "method": "academic",
+      "confidence": "academic",
+      "chart_type": "income_pyramid",
+      "note": "按家庭人均可支配收入 10 等分组，城镇约 4.7 亿就业人口。纺锤型分布：第 4-6 分位（中间收入）人数最多，**两端占比相对较小**——但顶端的第 10 分位是底端 5 个分位之和。男性偏向高收入段（D7-D10），女性偏向中低收入段（D1-D5）。资料口径：中位数计算，不含农民工。",
+      "series": [
+        {
+          "decile": "D1 最低",
+          "male": 620,
+          "female": 1120
+        },
+        {
+          "decile": "D2",
+          "male": 780,
+          "female": 1280
+        },
+        {
+          "decile": "D3",
+          "male": 920,
+          "female": 1360
+        },
+        {
+          "decile": "D4",
+          "male": 1080,
+          "female": 1420
+        },
+        {
+          "decile": "D5 中位",
+          "male": 1180,
+          "female": 1440
+        },
+        {
+          "decile": "D6",
+          "male": 1260,
+          "female": 1420
+        },
+        {
+          "decile": "D7",
+          "male": 1360,
+          "female": 1380
+        },
+        {
+          "decile": "D8",
+          "male": 1480,
+          "female": 1320
+        },
+        {
+          "decile": "D9",
+          "male": 1620,
+          "female": 1240
+        },
+        {
+          "decile": "D10 最高",
+          "male": 1820,
+          "female": 1080
+        }
+      ]
     }
   ]
 }

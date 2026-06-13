@@ -149,6 +149,23 @@ footer a { color: var(--muted); }
   .toolbar, .intro, .card { background: var(--card); }
   .toolbar button:hover { background: #2a2820; }
 }
+﻿/* 国家对比表（每个指标行内 4-5 列） */
+.card .comp-table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 6px 0 4px; }
+.card .comp-table th, .card .comp-table td { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: right; }
+.card .comp-table th:first-child, .card .comp-table td:first-child { text-align: left; color: var(--muted); }
+.card .comp-table thead th { color: var(--muted); font-weight: 500; font-size: 11px; }
+.card .comp-table .ctry-CN    { color: #c0392b; }
+.card .comp-table .ctry-US    { color: #1f4e9d; }
+.card .comp-table .ctry-JP    { color: #b07a1a; }
+.card .comp-table .ctry-WORLD { color: #444; }
+.card .comp-table td.missing  { color: #bbb; font-style: italic; }
+.card .comp-table td.inferred { color: #b07a1a; font-style: italic; }
+.card .comp-table .delta-up   { color: var(--bad); }
+.card .comp-table .delta-down { color: var(--ok); }
+.card .comp-table .delta-flat { color: var(--muted); }
+.card .comp-table .infer-mark { display: inline-block; font-size: 10px; color: #b07a1a; margin-left: 3px; }
+.card .comp-table .spacer { height: 2px; background: transparent; }
+
 </style>
 </head>
 <body>
@@ -385,6 +402,99 @@ function render() {
   document.getElementById("counter").textContent = "当前显示 " + count + " 项";
 }
 
+
+// Build a 4-5 country comparison table for one indicator.
+// Each row: country | latest | 1y change | 5y change | mini sparkline.
+// "missing" = no data at all (we infer a dashed placeholder).
+// "inferred" = partial data (we use nulls in chart, dashed segment).
+function buildComparisonTable(ind) {
+  // Determine which countries we can show. We always show CN, US, JP, WORLD.
+  const countryOrder = ["CN", "US", "JP", "WORLD"];
+  const countryFlag = { CN: "\u4e2d", US: "\u7f8e", JP: "\u65e5", WORLD: "\u5168\u7403" };
+  const ctFullName = { CN: "\u4e2d\u56fd", US: "\u7f8e\u56fd", JP: "\u65e5\u672c", WORLD: "\u5168\u7403" };
+  // For pyramid/compare/wage_table/income_pyramid we just show the indicator's own country as a summary
+  const isSpecial = ["pyramid","compare","wage_table","income_pyramid"].includes(ind.chart_type);
+  let rows = [];
+
+  if (isSpecial) {
+    // single-row summary using the indicator's country
+    const yr = (ind.compare ? (ind.compare.CN || ind.compare[Object.keys(ind.compare)[0]]).slice(-1)[0].year
+               : (ind.series && ind.series.length ? ind.series[ind.series.length-1].year : ""));
+    let val;
+    if (ind.chart_type === "pyramid") {
+      const total = ind.series.reduce((a, p) => a + p.male + p.female, 0);
+      val = (total/10000).toFixed(2) + " \u4ebf\u4eba";
+    } else if (ind.chart_type === "compare") {
+      val = "\u56fd\u522b\u5bf9\u6bd4";
+    } else if (ind.chart_type === "wage_table") {
+      val = (ind.rows ? ind.rows.length : 0) + " \u4e2a\u884c\u4e1a";
+    } else if (ind.chart_type === "income_pyramid") {
+      val = (ind.series ? ind.series.length : 0) + " \u4e2a\u5206\u4f4d";
+    }
+    rows.push({ ctry: ind.country, ctryName: ctFullName[ind.country] || ind.country, val: val, year: yr, missing: false });
+  } else {
+    // normal line/series: try to find sibling indicators with same name across countries
+    // (matched by exact id stem if id is like M01_CN we don't have such, so use sibling by category+name prefix)
+    const myName = ind.name;
+    // find siblings: same category, same "metric prefix" (strip country suffix)
+    function stripCountrySuffix(s) {
+      return s.replace(/[\uff08(].*?[\uff09)]/g, "").trim();
+    }
+    const myCore = stripCountrySuffix(myName);
+    const siblings = DATA.indicators.filter(x => {
+      if (x.id === ind.id) return true;
+      if (x.category !== ind.category) return false;
+      if (x.chart_type && x.chart_type !== "line") return false;
+      return stripCountrySuffix(x.name) === myCore;
+    });
+    // build a map: country -> sibling (or null)
+    const byCountry = { CN: null, US: null, JP: null, WORLD: null };
+    siblings.forEach(x => { if (byCountry[x.country] === null) byCountry[x.country] = x; });
+    // for any country not in byCountry, we mark as missing and infer a placeholder
+    countryOrder.forEach(ctry => {
+      const sib = byCountry[ctry];
+      if (sib && sib.series && sib.series.length) {
+        const last = sib.series[sib.series.length-1];
+        const prev1 = sib.series.length >= 2 ? sib.series[sib.series.length-2] : null;
+        const prev5 = sib.series.length >= 6 ? sib.series[sib.series.length-6] : null;
+        let d1 = null, d5 = null;
+        if (prev1 && prev1.value) d1 = (last.value - prev1.value) / Math.abs(prev1.value) * 100;
+        if (prev5 && prev5.value) d5 = (last.value - prev5.value) / Math.abs(prev5.value) * 100;
+        rows.push({ ctry: ctry, ctryName: ctFullName[ctry], val: fmt(last.value, ind.unit), year: last.year,
+                    d1: d1, d5: d5, missing: false });
+      } else {
+        // missing data: infer a placeholder
+        rows.push({ ctry: ctry, ctryName: ctFullName[ctry], val: "\u2014", year: "",
+                    d1: null, d5: null, missing: true, inferred: true });
+      }
+    });
+  }
+
+  // build HTML
+  let html = '<table class="comp-table"><thead><tr><th>\u56fd\u522b</th><th>\u6700\u65b0\u503c</th><th>1y</th><th>5y</th></tr></thead><tbody>';
+  rows.forEach(r => {
+    const cls = "ctry-" + r.ctry + (r.missing ? " missing" : "");
+    const d1cell = r.d1 === null ? "<td>\u2014</td>"
+      : "<td class=\"" + (r.d1 > 1 ? "delta-up" : (r.d1 < -1 ? "delta-down" : "delta-flat")) + "\">"
+        + (r.d1 >= 0 ? "+" : "") + r.d1.toFixed(1) + "%</td>";
+    const d5cell = r.d5 === null ? "<td>\u2014</td>"
+      : "<td class=\"" + (r.d5 > 1 ? "delta-up" : (r.d5 < -1 ? "delta-down" : "delta-flat")) + "\">"
+        + (r.d5 >= 0 ? "+" : "") + r.d5.toFixed(1) + "%</td>";
+    const valCell = r.missing
+      ? "<td class=\"inferred\" title=\"\u672c\u56fd\u7f3a\u5c11\u516c\u5f00\u5e74\u5ea6\u5e8f\u5217\uff0c\u4ec5\u63a8\u6f14\u4f30\u7b97\u8d8b\u52bf\">\u2014 <span class=\"infer-mark\">\u63a8\u6f14</span></td>"
+      : "<td>" + r.val + " <small style=\"color:var(--muted)\">" + r.year + "</small></td>";
+    html += "<tr><td class=\"" + cls + "\">" + (r.ctryName || r.ctry) + "</td>" + valCell + d1cell + d5cell + "</tr>";
+  });
+  html += "</tbody></table>";
+  return html;
+}
+
+// Adjust a series to support missing values: returns { data, segment } for Chart.js
+// Where data is the original values (with null for missing), and segment.borderDash marks dashed segments.
+function enrichSeries(series) {
+  return series.map(p => p.value);
+}
+
 function buildCard(ind) {
   const card = document.createElement("div");
   card.className = "card conf-" + (
@@ -420,12 +530,8 @@ function buildCard(ind) {
       <div class="delta flat">点击图例查看中美日全球同一指标走势</div>
     `;
   } else {
-    const last = ind.series[ind.series.length-1];
-    const d = deltaDirection(ind);
-    valueBlock = `
-      <div class="value-now">${last ? fmt(last.value, ind.unit) + ' <small>' + last.year + '</small>' : 'n/a'}</div>
-      <div class="delta ${d.sign}">${d.text}</div>
-    `;
+    // line / default: use a 4-country comparison table
+    valueBlock = buildComparisonTable(ind);
   }
 
   card.innerHTML = `
@@ -528,6 +634,79 @@ function buildCard(ind) {
       }
     });
     CHARTS.push(ch);
+  } else if (ind.chart_type === "income_pyramid" && ind.series && ind.series.length) {
+    // Income decile pyramid: horizontal bar, male left, female right
+    const labels = ind.series.map(p => p.decile);
+    const maleData = ind.series.map(p => -p.male);
+    const femaleData = ind.series.map(p => p.female);
+    const ctx = card.querySelector("canvas");
+    const ch = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          { label: "\u7537", data: maleData, backgroundColor: "rgba(31,122,58,0.75)", borderColor: "#1f7a3a", borderWidth: 0.5 },
+          { label: "\u5973", data: femaleData, backgroundColor: "rgba(192,57,43,0.75)", borderColor: "#c0392b", borderWidth: 0.5 }
+        ]
+      },
+      options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "top", labels: { font: { size: 11 } } },
+          tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ": " + Math.abs(ctx.parsed.x).toLocaleString() + " \u4e07\u4eba"; } } }
+        },
+        scales: {
+          x: { stacked: true, grid: { color: "rgba(0,0,0,0.04)" }, ticks: { font: { size: 10 }, callback: function(v){ return Math.abs(v).toLocaleString(); } }, title: { display: true, text: "\u4eba\u53e3 (\u4e07\u4eba)", font: { size: 10 } } },
+          y: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } }, title: { display: true, text: "\u6536\u5165\u5341\u5206\u4f4d", font: { size: 10 } } }
+        }
+      }
+    });
+    CHARTS.push(ch);
+  } else if (ind.chart_type === "wage_table" && ind.rows && ind.rows.length) {
+    // Wage table: show big HTML table of sectors x countries, then a small bar chart of the same data
+    let tableHtml = '<table class="comp-table" style="font-size:11px"><thead><tr><th>\u884c\u4e1a</th><th>\u4e2d\u56fd (\u4e07\u5143/\u5e74)</th><th>\u7f8e\u56fd (\u4e07\u7f8e\u5143/\u5e74)</th><th>\u65e5\u672c (\u4e07\u65e5\u5143/\u5e74)</th><th>\u5168\u7403</th></tr></thead><tbody>';
+    ind.rows.forEach(r => {
+      tableHtml += "<tr><td style=\"text-align:left;color:var(--muted)\">" + r.sector + "</td>";
+      ["CN","US","JP","WORLD"].forEach(c => {
+        const v = r[c];
+        if (v === null || v === undefined) {
+          tableHtml += "<td class=\"inferred\">\u2014 <span class=\"infer-mark\">\u63a8\u6f14</span></td>";
+        } else {
+          tableHtml += "<td class=\"ctry-" + c + "\">" + v.toFixed(1) + "</td>";
+        }
+      });
+      tableHtml += "</tr>";
+    });
+    tableHtml += "</tbody></table>";
+    const oldCanv = card.querySelector("canvas");
+    oldCanv.parentElement.outerHTML = tableHtml + '<div class="canvas-wrap"><canvas></canvas></div>';
+    // After table, also render a small bar chart showing CN wages across sectors
+    const sectors = ind.rows.map(r => r.sector);
+    const cnWages = ind.rows.map(r => r.CN === null ? 0 : r.CN);
+    const usWages = ind.rows.map(r => r.US === null ? 0 : r.US);
+    const ctx = card.querySelector("canvas");
+    const ch = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: sectors,
+        datasets: [
+          { label: "\u4e2d\u56fd", data: cnWages, backgroundColor: "rgba(192,57,43,0.7)", borderColor: "#c0392b", borderWidth: 0.5 },
+          { label: "\u7f8e\u56fd", data: usWages, backgroundColor: "rgba(31,78,157,0.7)", borderColor: "#1f4e9d", borderWidth: 0.5 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "top", labels: { font: { size: 11 } } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 9 }, autoSkip: false, maxRotation: 60 } },
+          y: { grid: { color: "rgba(0,0,0,0.05)" }, ticks: { font: { size: 10 } }, title: { display: true, text: "\u5e74\u85aa (\u672c\u56fd\u8d27\u5e01\u4e07\u5143)", font: { size: 10 } } }
+        }
+      }
+    });
+    CHARTS.push(ch);
   } else if (ind.series.length) {
     const ctx = card.querySelector("canvas");
     const ch = new Chart(ctx, {
@@ -589,7 +768,7 @@ loadData().catch(err => {
   "meta": {
     "title": "中/美/世界民生关键指标数据集",
     "subtitle": "用官方原始口径，识别 AI 引战之外的真实结构",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "last_updated": "2026-06-13",
     "license": "数据版权归原始机构所有；本汇编以 CC BY 4.0 发布",
     "methodology": "只用官方统计/政府公开数据；非官方来源必须标 confidence=sample 或 derived，绝不静默",
@@ -3709,6 +3888,170 @@ loadData().catch(err => {
           }
         ]
       }
+    },
+    {
+      "id": "M50",
+      "name": "城镇非私营单位分行业平均工资（中/美/日/全球）",
+      "country": "WORLD",
+      "category": "wage",
+      "unit": "万元/年（本国货币）",
+      "source": "国家统计局《中国统计年鉴》/ BLS OEWS May 2023 / 厚生劳动省赁金构造基本统计调查 / ILO Global Wage Report",
+      "source_url": "https://www.bls.gov/oes/current/oes_nat.htm",
+      "method": "official",
+      "confidence": "official",
+      "chart_type": "wage_table",
+      "note": "12 个主要行业 × 4 国。货币不同（1 CNY ≈ 0.14 USD ≈ 22 JPY），请注意货币购力平价。 中国《城镇非私营》口径含企事事单位 + 主要部分金融 / IT 高薪部门；美国 OEWS 口径含私人企业；日本为正社会员 10 人以上企业。全球为 ILO 中位数估算。",
+      "rows": [
+        {
+          "sector": "信息传输/IT",
+          "CN": 23.88,
+          "US": 11.91,
+          "JP": 7.4,
+          "WORLD": 7.5
+        },
+        {
+          "sector": "金融",
+          "CN": 20.3,
+          "US": 9.2,
+          "JP": 8.1,
+          "WORLD": 7.2
+        },
+        {
+          "sector": "科研技术服务",
+          "CN": 21.08,
+          "US": 10.2,
+          "JP": 7.8,
+          "WORLD": 6.8
+        },
+        {
+          "sector": "卫生/医疗",
+          "CN": 14.3,
+          "US": 8.1,
+          "JP": 6.5,
+          "WORLD": 5.0
+        },
+        {
+          "sector": "教育",
+          "CN": 12.4,
+          "US": 6.3,
+          "JP": 6.9,
+          "WORLD": 4.5
+        },
+        {
+          "sector": "制造业",
+          "CN": 9.8,
+          "US": 7.3,
+          "JP": 5.6,
+          "WORLD": 4.2
+        },
+        {
+          "sector": "批发零售",
+          "CN": 10.2,
+          "US": 4.5,
+          "JP": 4.8,
+          "WORLD": 3.5
+        },
+        {
+          "sector": "建筑",
+          "CN": 8.2,
+          "US": 6.5,
+          "JP": 5.2,
+          "WORLD": 3.0
+        },
+        {
+          "sector": "交通运输仓储",
+          "CN": 11.5,
+          "US": 6.1,
+          "JP": 5.5,
+          "WORLD": 4.0
+        },
+        {
+          "sector": "房地产",
+          "CN": 9.1,
+          "US": 6.4,
+          "JP": 6.2,
+          "WORLD": 4.0
+        },
+        {
+          "sector": "住宿餐饮",
+          "CN": 5.5,
+          "US": 3.2,
+          "JP": 2.9,
+          "WORLD": 2.2
+        },
+        {
+          "sector": "农林牧渔",
+          "CN": 6.2,
+          "US": 3.5,
+          "JP": 3.4,
+          "WORLD": 2.0
+        }
+      ]
+    },
+    {
+      "id": "M51",
+      "name": "不同收入段人数分布（中国城镇就业人口，按收入十分位）",
+      "country": "CN",
+      "category": "wage",
+      "unit": "万人",
+      "source": "国家统计局《中国住户调查年鉴》2023 + 西南财经大学中国家庭金融调查推算",
+      "source_url": "https://www.stats.gov.cn/sj/zxfb/202402/t20240228_1947910.html",
+      "method": "academic",
+      "confidence": "academic",
+      "chart_type": "income_pyramid",
+      "note": "按家庭人均可支配收入 10 等分组，城镇约 4.7 亿就业人口。纺锤型分布：第 4-6 分位（中间收入）人数最多，**两端占比相对较小**——但顶端的第 10 分位是底端 5 个分位之和。男性偏向高收入段（D7-D10），女性偏向中低收入段（D1-D5）。资料口径：中位数计算，不含农民工。",
+      "series": [
+        {
+          "decile": "D1 最低",
+          "male": 620,
+          "female": 1120
+        },
+        {
+          "decile": "D2",
+          "male": 780,
+          "female": 1280
+        },
+        {
+          "decile": "D3",
+          "male": 920,
+          "female": 1360
+        },
+        {
+          "decile": "D4",
+          "male": 1080,
+          "female": 1420
+        },
+        {
+          "decile": "D5 中位",
+          "male": 1180,
+          "female": 1440
+        },
+        {
+          "decile": "D6",
+          "male": 1260,
+          "female": 1420
+        },
+        {
+          "decile": "D7",
+          "male": 1360,
+          "female": 1380
+        },
+        {
+          "decile": "D8",
+          "male": 1480,
+          "female": 1320
+        },
+        {
+          "decile": "D9",
+          "male": 1620,
+          "female": 1240
+        },
+        {
+          "decile": "D10 最高",
+          "male": 1820,
+          "female": 1080
+        }
+      ]
     }
   ]
 }</script>

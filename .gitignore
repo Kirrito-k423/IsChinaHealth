@@ -1,0 +1,5 @@
+﻿# Fetched source cache (30 days)
+data/.cache/
+__pycache__/
+*.pyc
+.DS_Store

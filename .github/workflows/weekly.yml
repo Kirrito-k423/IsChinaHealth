@@ -1,0 +1,59 @@
+﻿name: update-data-and-deploy
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "data/**"
+      - "scripts/**"
+      - "docs/**"
+      - ".github/workflows/**"
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install requests beautifulsoup4 lxml
+      - name: Run fetcher
+        continue-on-error: true
+        run: python scripts/fetch.py
+      - name: Validate JSON
+        run: python scripts/validate.py
+      - name: Commit if changed
+        run: |
+          git config user.name "data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add data/indicators.json
+          if git diff --staged --quiet; then
+            echo "no data changes"
+          else
+            git commit -m "data: weekly auto-update $(date -u +%Y-%m-%d)"
+            git push
+          fi
+  deploy:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: "docs"
+      - id: deployment
+        uses: actions/deploy-pages@v4

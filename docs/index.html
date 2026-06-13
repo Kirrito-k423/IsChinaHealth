@@ -1,0 +1,441 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>真实的中国 / 美国 / 世界民生数据</title>
+<meta name="description" content="用官方原始口径，拒绝 AI 引战低质内容；持续更新的静态数据看板" />
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%23c00'/></svg>" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #fafaf7;
+  --card: #ffffff;
+  --ink: #1a1a1a;
+  --muted: #6b6b6b;
+  --line: #e5e2da;
+  --accent: #c0392b;     /* 貃底红 - 严谨不激进 */
+  --ok: #1f7a3a;
+  --warn: #b07a1a;
+  --bad: #a32a2a;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+               "Microsoft YaHei", "Source Han Sans CN", "Noto Sans CJK SC",
+               Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  font-size: 15px;
+}
+header.top {
+  background: #1a1a1a;
+  color: #f1efe9;
+  padding: 28px 20px 24px;
+  border-bottom: 1px solid #000;
+}
+header.top h1 { margin: 0 0 8px; font-size: 22px; letter-spacing: 0.5px; }
+header.top p { margin: 0; color: #c8c5ba; font-size: 13px; max-width: 920px; }
+header.top .meta { margin-top: 10px; font-size: 12px; color: #9d9a8e; }
+main { max-width: 1180px; margin: 0 auto; padding: 20px; }
+
+.section { margin-top: 28px; }
+.section > h2 {
+  font-size: 17px;
+  margin: 0 0 4px;
+  border-left: 4px solid var(--accent);
+  padding-left: 10px;
+}
+.section > .sub { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 14px;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px 12px;
+  position: relative;
+}
+.card h3 {
+  font-size: 14px;
+  margin: 0 0 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.card h3 .tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.card .label-row { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.card .value-now { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+.card .value-now small { color: var(--muted); font-weight: 400; font-size: 12px; }
+.card .delta { font-size: 12px; }
+.card .delta.up { color: var(--bad); }    /* 上涨不一定是好事 */
+.card .delta.down { color: var(--ok); }
+.card .delta.flat { color: var(--muted); }
+.card .note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.card canvas { width: 100% !important; height: 140px !important; }
+.card .src {
+  font-size: 11px; color: var(--muted);
+  border-top: 1px dashed var(--line);
+  margin-top: 8px; padding-top: 6px;
+}
+.card .src a { color: var(--muted); }
+.card.conf-official { border-top: 3px solid var(--ok); }
+.card.conf-academic { border-top: 3px solid var(--warn); }
+.card.conf-sample   { border-top: 3px solid var(--bad); }
+
+.legend {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  font-size: 12px; color: var(--muted);
+  margin: 10px 0 0;
+}
+.legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.legend .sw.ok { background: var(--ok); }
+.legend .sw.warn { background: var(--warn); }
+.legend .sw.bad { background: var(--bad); }
+
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  background: #fff; border: 1px solid var(--line); padding: 10px 14px; border-radius: 6px;
+}
+.toolbar label { font-size: 12px; color: var(--muted); margin-right: 4px; }
+.toolbar select, .toolbar button {
+  font: inherit; font-size: 13px;
+  padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px;
+  background: #fff; color: var(--ink); cursor: pointer;
+}
+.toolbar button:hover { background: #f0eee5; }
+.toolbar .pill {
+  font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #f4f1e7; color: #555;
+}
+
+.intro {
+  background: #fff; border: 1px solid var(--line); border-radius: 6px;
+  padding: 16px 18px; margin-top: 18px; font-size: 14px;
+}
+.intro p { margin: 0 0 8px; }
+.intro p:last-child { margin-bottom: 0; }
+.intro strong { color: var(--accent); }
+footer {
+  margin-top: 40px; padding: 18px 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px; color: var(--muted);
+  text-align: center;
+}
+footer a { color: var(--muted); }
+.collapsed .card .canvas-wrap { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14130f; --card: #1c1b17; --ink: #ebe7da; --muted: #908a7b;
+    --line: #2c2a23;
+  }
+  header.top { background: #0b0a08; }
+  header.top p { color: #c8c5ba; }
+  .toolbar, .intro, .card { background: var(--card); }
+  .toolbar button:hover { background: #2a2820; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>真实的中国 / 美国 / 世界民生数据</h1>
+  <p>主页面仅为个人信息梳理与讨论，所有数据以官方原始口径为依据。该项目只采集、梳理、渲染公开可追溯的权威数据，不提供意见、不制造恍慊。</p>
+  <div class="meta">
+    数据集版本：<span id="metaVersion">加载中…</span>
+    · 最近更新：<span id="metaUpdated">加载中…</span>
+    · 下次定时更新：每周一 06:00 UTC
+  </div>
+</header>
+
+<main>
+
+<div class="intro">
+  <p><strong>这个项目是做什么的？</strong></p>
+  <p>
+    第一，反“AI 引战型低质内容”。
+    B 站、知乎、小红书上很多打“资本与劳动对竟”、“生育下跌”、“互联网院薪低”的内容，
+    很多是抽了部分实数据上口头，并未给出原始来源与口径。
+    本页面仅采纳《国家统计年鉴》、《BLS 年报》、《IMF WEO》《ILO WESO》等可直接验证的原始公开文件，并在每张图表下方标注。
+  </p>
+  <p>
+    第二，跨国别、跨岗位、跨时间看中、美、世界的不平衡。
+    居民可支配收入、人均 GDP、CPI、房价、失业率、基尼系数、劳动分配率以及“农民 / 都市白领 / 计算机行业 / AI 研究员”这几个岗位同时可观。其中“都市白领”不是国家统计口径，本页面以《城镇非私营单位平均工资》为上限估算（含企事业单位、院校、金融、IT 等都市岗位），以《城镇私营单位平均工资》为下限估算（含小微企业、服务业、个体商户为主），两者中间才是“白领”实际所在。
+  </p>
+  <p>
+    第三，数据本身可被公开审计。
+    每个指标带 <span class="pill">source</span>
+    <span class="pill">method</span>
+    <span class="pill">confidence</span>
+    三个标签。
+    <span class="pill" style="color:var(--ok)">official</span> = 可以在原始部门网站验证；
+    <span class="pill" style="color:var(--warn)">academic</span> = 依赖学术口径估算；
+    <span class="pill" style="color:var(--bad)">industry_sample</span> = 行业平台报酬样本。
+  </p>
+  <p>
+    你可以点击每张图表下方的「原始来源」直接跳转到发布页。
+    如果发现与官方公开数据不一致，请提 PR；最危险的是“为了引战而改动定中中间资料”。
+  </p>
+</div>
+
+<div class="section" style="margin-top:18px">
+  <div class="toolbar">
+    <label>国家：</label>
+    <select id="filterCountry">
+      <option value="">全部</option>
+      <option value="CN">中国</option>
+      <option value="US">美国</option>
+      <option value="JP">日本</option>
+      <option value="WORLD">全球</option>
+    </select>
+    <label>主题：</label>
+    <select id="filterCategory">
+      <option value="">全部</option>
+    </select>
+    <label>可信度：</label>
+    <select id="filterConfidence">
+      <option value="">全部</option>
+      <option value="official">official</option>
+      <option value="academic">academic</option>
+      <option value="industry_sample">industry_sample</option>
+    </select>
+    <button id="btnExpand">展开全部</button>
+    <button id="btnCollapse">收起全部</button>
+    <button id="btnExport">导出当前结果 JSON</button>
+    <span class="pill" id="counter">--</span>
+  </div>
+  <div class="legend">
+    <span><span class="sw ok"></span>official 官方可验证</span>
+    <span><span class="sw warn"></span>academic 估算</span>
+    <span><span class="sw bad"></span>industry_sample 行业样本</span>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<footer>
+  <p>
+    数据版权归原始发布机构。本页面以 CC BY 4.0 公开。
+    GitHub Actions 每周自动更新数据与页面。
+  </p>
+  <p>
+    <a href="https://github.com/IsChinaHealth/IsChinaHealth">源仓与贡献指南</a> ·
+    <a href="https://github.com/IsChinaHealth/IsChinaHealth/blob/main/data/indicators.json">原始数据下载</a>
+  </p>
+</footer>
+</main>
+
+<script>
+const CATEGORY_LABELS = {
+  population: "人口",
+  aging: "老龄化",
+  income: "居民收入",
+  employment: "就业",
+  cost_of_living: "生活成本",
+  housing: "房价",
+  wealth: "财富与存款",
+  inequality: "财富差距",
+  economy: "宏观经济",
+  wage: "工资",
+  wage_ai: "AI 研究员薪酬",
+  distribution: "劳动分配"
+};
+const CATEGORY_ORDER = [
+  "population", "aging", "income", "wage", "wage_ai",
+  "employment", "cost_of_living", "housing",
+  "wealth", "inequality", "distribution", "economy"
+];
+const COUNTRY_LABEL = { CN: "中国", US: "美国", JP: "日本", WORLD: "全球" };
+
+let DATA = null;
+let CHARTS = [];
+
+async function loadData() {
+  const res = await fetch("../data/indicators.json", { cache: "no-store" });
+  DATA = await res.json();
+  document.getElementById("metaVersion").textContent = DATA.meta.version;
+  document.getElementById("metaUpdated").textContent = DATA.meta.last_updated;
+  initFilters();
+  render();
+}
+
+function initFilters() {
+  const sel = document.getElementById("filterCategory");
+  const seen = new Set(DATA.indicators.map(x => x.category));
+  [...seen].sort((a,b) => CATEGORY_ORDER.indexOf(a) - CATEGORY_ORDER.indexOf(b))
+    .forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = CATEGORY_LABELS[c] || c;
+      sel.appendChild(o);
+    });
+  ["filterCountry","filterCategory","filterConfidence"].forEach(id => {
+    document.getElementById(id).addEventListener("change", render);
+  });
+  document.getElementById("btnExpand").onclick = () => {
+    document.querySelectorAll(".card canvas").forEach(c => c.style.display = "block");
+  };
+  document.getElementById("btnCollapse").onclick = () => {
+    document.querySelectorAll(".card canvas").forEach(c => c.style.display = "none");
+  };
+  document.getElementById("btnExport").onclick = exportJSON;
+}
+
+function getFilters() {
+  return {
+    country: document.getElementById("filterCountry").value,
+    category: document.getElementById("filterCategory").value,
+    confidence: document.getElementById("filterConfidence").value,
+  };
+}
+
+function fmt(value, unit) {
+  if (value == null) return "n/a";
+  if (unit === "%" || unit === "‰") return value.toFixed(1) + " " + unit;
+  if (unit === "指数 0-1") return value.toFixed(3);
+  if (unit === "万亿元") return value.toFixed(1) + " 万亿";
+  if (unit === "万人") return Math.round(value).toLocaleString() + " 万人";
+  if (Math.abs(value) >= 1000) return value.toLocaleString(undefined,{maximumFractionDigits:0}) + " " + unit;
+  return value.toLocaleString() + " " + unit;
+}
+
+function deltaDirection(ind) {
+  // Heuristic: for population / income / wage / wealth, up = good? No — 财富不高，人口不多
+  // We simply compute first->last slope, sign is shown but interpretation left to the user.
+  const s = ind.series;
+  if (s.length < 2) return { sign: "flat", text: "" };
+  const first = s[0], last = s[s.length-1];
+  if (!first || !last) return { sign: "flat", text: "" };
+  const dPct = (last.value - first.value) / Math.abs(first.value) * 100;
+  const sign = dPct > 1 ? "up" : (dPct < -1 ? "down" : "flat");
+  return { sign, text: (dPct>=0?"+":"") + dPct.toFixed(1) + "% (" + first.year + "→" + last.year + ")" };
+}
+
+function render() {
+  CHARTS.forEach(c => c.destroy());
+  CHARTS = [];
+  const f = getFilters();
+  const root = document.getElementById("root");
+  root.innerHTML = "";
+
+  const grouped = {};
+  DATA.indicators
+    .filter(x => !f.country || x.country === f.country)
+    .filter(x => !f.category || x.category === f.category)
+    .filter(x => !f.confidence || x.confidence === f.confidence)
+    .forEach(x => {
+      grouped[x.category] = grouped[x.category] || [];
+      grouped[x.category].push(x);
+    });
+
+  let count = 0;
+  CATEGORY_ORDER.filter(c => grouped[c]).forEach(cat => {
+    const sec = document.createElement("div");
+    sec.className = "section";
+    sec.innerHTML = <h2></h2>
+                     <div class="sub">主题： · 共  项指标</div>
+                     <div class="cards"></div>;
+    root.appendChild(sec);
+    const cards = sec.querySelector(".cards");
+    grouped[cat].forEach(ind => {
+      cards.appendChild(buildCard(ind));
+      count++;
+    });
+  });
+
+  document.getElementById("counter").textContent = "当前显示 " + count + " 项";
+}
+
+function buildCard(ind) {
+  const card = document.createElement("div");
+  card.className = "card conf-" + (
+    ind.confidence === "official" ? "official" :
+    ind.confidence === "academic" ? "academic" : "sample"
+  );
+  const last = ind.series[ind.series.length-1];
+  const d = deltaDirection(ind);
+  const confLabel = {
+    official: "official 官方",
+    academic: "academic 估算",
+    industry_sample: "industry_sample 行业样本"
+  }[ind.confidence] || ind.confidence;
+  card.innerHTML = 
+    <h3><span></span><span class="tag"> · </span></h3>
+    <div class="value-now"></div>
+    <div class="delta "></div>
+    <div class="canvas-wrap"><canvas></canvas></div>
+    <div class="note"></div>
+    <div class="src">
+      来源：<a href="" target="_blank" rel="noopener"></a>
+      · 口径：
+    </div>
+  ;
+  // chart
+  if (ind.series.length) {
+    const ctx = card.querySelector("canvas");
+    const ch = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: ind.series.map(p => p.year),
+        datasets: [{
+          data: ind.series.map(p => p.value),
+          borderColor: "#c0392b",
+          backgroundColor: "rgba(192,57,43,0.08)",
+          tension: 0.18,
+          pointRadius: 2,
+          borderWidth: 1.5,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { mode: "index", intersect: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: "rgba(0,0,0,0.05)" }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+    CHARTS.push(ch);
+  }
+  return card;
+}
+
+function exportJSON() {
+  const f = getFilters();
+  const subset = DATA.indicators
+    .filter(x => !f.country || x.country === f.country)
+    .filter(x => !f.category || x.category === f.category)
+    .filter(x => !f.confidence || x.confidence === f.confidence);
+  const blob = new Blob([JSON.stringify({meta: DATA.meta, indicators: subset}, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = indicators___.json;
+  a.click();
+}
+
+loadData().catch(err => {
+  document.getElementById("root").innerHTML = 
+    <div class="card" style="border-color:var(--bad)">
+      <h3>加载数据失败</h3>
+      <p>请检查网络或本地服务器路径。错误：</p>
+    </div>;
+});
+</script>
+</body>
+</html>
+

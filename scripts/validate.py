@@ -3,7 +3,7 @@
 import json, sys
 REQUIRED = ["id","name","country","category","unit","source","source_url",
             "method","confidence","note"]
-CONF_OK = {"official","academic","industry_sample"}
+CONF_OK = {"official","official_derived","academic","industry_sample"}
 COUNTRIES = {"CN","US","JP","WORLD"}
 CATS = {"population","aging","income","employment","cost_of_living","housing",
         "wealth","inequality","economy","wage","wage_ai","distribution"}
@@ -45,7 +45,7 @@ def main():
                 assert yrs == sorted(yrs)
                 for p in series:
                     assert isinstance(p["year"], int) and 1990 <= p["year"] <= 2100
-                    assert isinstance(p["value"], (int,float))
+                    assert p["value"] is None or isinstance(p["value"], (int,float))
         elif ct == "income_pyramid":
             assert "series" in x
             assert len(x["series"]) >= 5

@@ -429,11 +429,12 @@ function exportJSON() {
 }
 
 loadData().catch(err => {
-  document.getElementById("root").innerHTML = 
-    <div class="card" style="border-color:var(--bad)">
+  document.getElementById("root").innerHTML =
+    `<div class="card" style="border-color:var(--bad)">
       <h3>加载数据失败</h3>
       <p>请检查网络或本地服务器路径。错误：</p>
-    </div>;
+      <pre style="white-space:pre-wrap">${err && err.message ? err.message : err}</pre>
+    </div>`;
 });
 </script>
 </body>

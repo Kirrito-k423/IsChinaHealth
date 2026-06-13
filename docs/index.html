@@ -358,9 +358,10 @@ function render() {
   CATEGORY_ORDER.filter(c => grouped[c]).forEach(cat => {
     const sec = document.createElement("div");
     sec.className = "section";
-    sec.innerHTML = <h2></h2>
-                     <div class="sub">主题： · 共  项指标</div>
-                     <div class="cards"></div>;
+    sec.innerHTML =
+      `<h2>${CATEGORY_LABELS[cat] || cat}</h2>` +
+      `<div class="sub">主题：${CATEGORY_LABELS[cat] || cat} · 共 ${grouped[cat].length} 项指标</div>` +
+      `<div class="cards"></div>`;
     root.appendChild(sec);
     const cards = sec.querySelector(".cards");
     grouped[cat].forEach(ind => {
@@ -437,7 +438,7 @@ function exportJSON() {
   const blob = new Blob([JSON.stringify({meta: DATA.meta, indicators: subset}, null, 2)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = indicators___.json;
+  a.download = `indicators-${DATA.meta.version || "subset"}.json`;
   a.click();
 }
 

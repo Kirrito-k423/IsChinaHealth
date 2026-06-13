@@ -372,17 +372,17 @@ function buildCard(ind) {
     academic: "academic 估算",
     industry_sample: "industry_sample 行业样本"
   }[ind.confidence] || ind.confidence;
-  card.innerHTML = 
-    <h3><span></span><span class="tag"> · </span></h3>
-    <div class="value-now"></div>
-    <div class="delta "></div>
+  card.innerHTML = `
+    <h3><span>${ind.name}</span><span class="tag">${COUNTRY_LABEL[ind.country] || ind.country} · ${confLabel}</span></h3>
+    <div class="value-now">${last ? fmt(last.value, ind.unit) + ' <small>' + last.year + '</small>' : 'n/a'}</div>
+    <div class="delta ${d.sign}">${d.text}</div>
     <div class="canvas-wrap"><canvas></canvas></div>
-    <div class="note"></div>
+    <div class="note">${ind.note || ''}</div>
     <div class="src">
-      来源：<a href="" target="_blank" rel="noopener"></a>
-      · 口径：
+      来源：<a href="${ind.source_url}" target="_blank" rel="noopener">${ind.source}</a>
+      · 口径：${ind.method}
     </div>
-  ;
+  `;
   // chart
   if (ind.series.length) {
     const ctx = card.querySelector("canvas");
